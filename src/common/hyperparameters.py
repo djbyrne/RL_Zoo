@@ -1,4 +1,4 @@
-HYPERPARAMS = {
+PARAMS = {
     'pong': {
         'env_name':         "PongNoFrameskip-v4",
         'stop_reward':      18.0,
