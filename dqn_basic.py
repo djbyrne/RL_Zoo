@@ -8,9 +8,10 @@ import torch.optim as optim
 
 from tensorboardX import SummaryWriter
 
-from src import actions, agents, experiences, common, wrapper
+from src import actions, agents, runner, common, wrapper, runner
 from src.models import dqn_model
 from src.common import hyperparameters, logger
+from src.memory import ExperienceReplayBuffer
 
 
 # from lib import dqn_model, common
@@ -40,8 +41,8 @@ if __name__ == "__main__":
 	agent = agents.DQNAgent(net, selector, device=device)
 
 	#RUNNER
-	exp_source = experiences.ExperienceSourceFirstLast(env, agent, gamma=params['gamma'],steps_count=1)
-	buffer = experiences.ExperienceReplayBuffer(exp_source,buffer_size=params['replay_size'])
+	exp_source = runner.ExperienceSourceFirstLast(env, agent, gamma=params['gamma'],steps_count=1)
+	buffer = ExperienceReplayBuffer(exp_source,buffer_size=params['replay_size'])
 	optimizer = optim.Adam(net.parameters(), lr=params['learning_rate'])
 
 	frame_idx = 0
