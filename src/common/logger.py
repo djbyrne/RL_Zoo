@@ -19,6 +19,9 @@ class RewardTracker:
         self.writer.close()
 
     def reward(self, reward, frame, epsilon=None):
+        """
+        add reward to tracker and check if early stopping should be activated
+        """
         self.total_rewards.append(reward)
         speed = (frame - self.ts_frame) / (time.time() - self.ts)
         self.ts_frame = frame

@@ -71,6 +71,8 @@ class ExperienceSource:
             actions = [None] * len(states)
             states_input = []
             states_indices = []
+
+            #gather actions for all agents/environments
             for idx, state in enumerate(states):
                 if state is None:
                     actions[idx] = self.pool[0].action_space.sample()  # assume that all envs are from the same family
@@ -86,13 +88,18 @@ class ExperienceSource:
             grouped_actions = _group_list(actions, env_lens)
 
             global_ofs = 0
+
+            #execute actions for all agents/environments
             for env_idx, (env, action_n) in enumerate(zip(self.pool, grouped_actions)):
+
+                #step
                 if self.vectorized:
                     next_state_n, r_n, is_done_n, _ = env.step(action_n)
                 else:
                     next_state, r, is_done, _ = env.step(action_n[0])
                     next_state_n, r_n, is_done_n = [next_state], [r], [is_done]
 
+                #process next states and rewards
                 for ofs, (action, next_state, r, is_done) in enumerate(zip(action_n, next_state_n, r_n, is_done_n)):
                     idx = global_ofs + ofs
                     state = states[idx]
@@ -176,7 +183,7 @@ class ExperienceSourceFirstLast(ExperienceSource):
             else:
                 last_state = exp[-1].state
                 elems = exp[:-1]
-            total_rewards = 0.0
+            total_reward = 0.0
             for e in reversed(elems):
                 total_reward *= self.gamma
                 total_reward += e.reward

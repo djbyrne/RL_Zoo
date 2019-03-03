@@ -4,9 +4,11 @@ Agent is something which converts states into actions and has state
 import copy
 import numpy as np
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 
 from . import actions
+from src.common import utils
 
 
 class BaseAgent:
@@ -46,7 +48,7 @@ def defualt_states_preprocessor(states):
     else:
         np_states = np.array([np.array(s, copy=False) for s in states], copy=False)
 
-    return torch,tensor(np_states)
+    return torch.tensor(np_states)
 
 def float32_preprocessor(states):
     np_states = np.array(states, dtype=np.float32)
@@ -77,6 +79,25 @@ class DQNAgent(BaseAgent):
         q = q_value.data.cpu().numpy()
         actions = self.action_selector(q)
         return actions, agent_states
+
+    def calc_loss(self,batch, net, tgt_net, gamma=0.99, device="cpu"):
+
+        #unpack batch of experience
+        states, actions, rewards, dones, next_states = utils.unpack_batch(batch)
+
+        states_v = torch.tensor(states).to(device)
+        next_states_v = torch.tensor(next_states).to(device)
+        actions_v = torch.tensor(actions).to(device)
+        rewards_v = torch.tensor(rewards).to(device)
+        done_mask = torch.ByteTensor(dones).to(device)
+
+        state_action_values = net(states_v).gather(1, actions_v.unsqueeze(-1)).squeeze(-1)
+        next_state_values = tgt_net(next_states_v).max(1)[0]
+        next_state_values[done_mask] = 0.0
+
+        #discounted reward
+        expected_state_action_values = next_state_values.detach() * gamma + rewards_v
+        return nn.MSELoss()(state_action_values, expected_state_action_values)
 
 
 class TargetNetwork:
