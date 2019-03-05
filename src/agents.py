@@ -7,8 +7,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from . import actions
-from src.common import utils
+import actions
+from common import utils
 
 
 class BaseAgent:
@@ -80,7 +80,7 @@ class DQNAgent(BaseAgent):
         actions = self.action_selector(q)
         return actions, agent_states
 
-    def calc_loss(self,batch, net, tgt_net, gamma=0.99, device="cpu"):
+    def calc_loss(self,batch, net, tgt_net, gamma=0.99, device="cpu", double=True):
 
         #unpack batch of experience
         states, actions, rewards, dones, next_states = utils.unpack_batch(batch)
@@ -92,7 +92,14 @@ class DQNAgent(BaseAgent):
         done_mask = torch.ByteTensor(dones).to(device)
 
         state_action_values = net(states_v).gather(1, actions_v.unsqueeze(-1)).squeeze(-1)
-        next_state_values = tgt_net(next_states_v).max(1)[0]
+
+        if double:
+            #calculate the next action to take using main network
+            next_state_actions = net(next_states_v).max(1)[1]
+            #calculate the values of this action using the target network
+            next_state_values = tgt_net(next_states_v).gather(1, next_state_actions.unsqueeze(-1)).squeeze(-1)
+        else:
+            next_state_values = tgt_net(next_states_v).max(1)[0]
         next_state_values[done_mask] = 0.0
 
         #discounted reward

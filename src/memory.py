@@ -3,7 +3,7 @@ import collections
 import numpy as np
 from collections import namedtuple
 
-from src.runner import Runner
+from runner import Runner
 
 # those entries are emitted from ExperienceSourceFirstLast. Reward is discounted over the trajectory piece
 ExperienceFirstLast = collections.namedtuple('ExperienceFirstLast', ('state', 'action', 'reward', 'last_state'))

@@ -18,3 +18,14 @@ def unpack_batch(batch):
 
     return np.array(states, copy=False), np.array(actions), np.array(rewards, dtype=np.float32), \
            np.array(dones, dtype=np.uint8), np.array(last_states, copy=False)
+
+
+def calc_values_of_states(states, net, device="cpu"):
+    
+    mean_vals = []
+    for batch in np.array_split(states, 64):
+        states_v = torch.tensor(batch).to(device)
+        action_values_v = net(states_v)
+        best_action_values_v = action_values_v.max(1)[0]
+        mean_vals.append(best_action_values_v.mean().item())
+    return np.mean(mean_vals)

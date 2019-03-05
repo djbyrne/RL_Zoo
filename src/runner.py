@@ -8,7 +8,7 @@ import numpy as np
 
 from collections import namedtuple, deque
 
-from .agents import BaseAgent
+from agents import BaseAgent
 # from common import utils
 
 # one single experience step
@@ -40,6 +40,7 @@ class Runner:
             self.pool = [env]
         self.agent = agent
         self.steps_count = steps_count
+        print(steps_count)
         self.steps_delta = steps_delta
         self.total_rewards = []
         self.total_steps = []
@@ -161,7 +162,7 @@ def _group_list(items, lens):
 ExperienceFirstLast = collections.namedtuple('ExperienceFirstLast', ('state', 'action', 'reward', 'last_state'))
 
 
-class ExperienceSourceFirstLast(Runner):
+class RunnerSourceFirstLast(Runner):
     """
     This is a wrapper around ExperienceSource to prevent storing full trajectory in replay buffer when we need
     only first and last states. For every trajectory piece it calculates discounted reward and emits only first
@@ -171,12 +172,12 @@ class ExperienceSourceFirstLast(Runner):
 
     def __init__(self, env, agent, gamma, steps_count=1, steps_delta=1, vectorized=False):
         assert isinstance(gamma,float)
-        super(ExperienceSourceFirstLast, self).__init__(env, agent, steps_count+1, steps_delta, vectorized=vectorized)
+        super(RunnerSourceFirstLast, self).__init__(env, agent, steps_count+1, steps_delta, vectorized=vectorized)
         self.gamma = gamma
         self.steps = steps_count
 
     def __iter__(self):
-        for exp in super(ExperienceSourceFirstLast, self).__iter__():
+        for exp in super(RunnerSourceFirstLast, self).__iter__():
             if exp[-1].done and len(exp) <= self.steps:
                 last_state = None
                 elems = exp
