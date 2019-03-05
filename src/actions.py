@@ -17,6 +17,7 @@ class ArgmaxActionSelector(ActionSelector):
         assert isinstance(scores, np.ndarray)
         return np.argmax(scores, axis=1)
 
+
 class EpsilonGreedyActionSelector(ActionSelector):
     def __init__(self, epsilon=0.5, selector=ArgmaxActionSelector()):
         self.epsilon = epsilon

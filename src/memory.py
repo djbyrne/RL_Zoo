@@ -8,11 +8,30 @@ from runner import Runner
 # those entries are emitted from ExperienceSourceFirstLast. Reward is discounted over the trajectory piece
 ExperienceFirstLast = collections.namedtuple('ExperienceFirstLast', ('state', 'action', 'reward', 'last_state'))
 
+class BaseBuffer:
+    def __init__(self,runner, buffer_size):
+        return None
+
+    def __len__(self):
+        raise NotImplementedError
+
+    def __iter__(self):
+        raise NotImplementedError
+
+    def sample(self):
+        raise NotImplementedError
+
+    def populate(self):
+        raise NotImplementedError
+
+    def _add(self):
+        raise NotImplementedError
+
 class ExperienceReplayBuffer:
-    def __init__(self, experience_source, buffer_size):
-        assert isinstance(experience_source, (Runner, type(None)))
+    def __init__(self, runner, buffer_size):
+        assert isinstance(runner, (Runner, type(None)))
         assert isinstance(buffer_size, int)
-        self.experience_source_iter = None if experience_source is None else iter(experience_source)
+        self.experience_source_iter = None if runner is None else iter(runner)
         self.buffer = []
         self.capacity = buffer_size
         self.pos = 0
@@ -51,3 +70,18 @@ class ExperienceReplayBuffer:
         for _ in range(samples):
             entry = next(self.experience_source_iter)
             self._add(entry)
+
+class PrioritizedExperienceReplayBuffer:
+    def __init__(self, runner, buff_size, prob_alpha=0.6):
+        self.runner = iter(runner)
+        self.prob_alpha = prob_alpha
+        self.capacity = buff_size
+        self.pos = 0
+        self.buffer = []
+        self.priorities = np.zeros((buff_size,), dtype=np.float32)
+
+    def __len__(self):
+        return len(self.buffer)
+
+    def populate(self, count):
+        raise NotImplementedError
