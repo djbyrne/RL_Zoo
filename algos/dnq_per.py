@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
-import sys, os
+import sys
+import os
 sys.path.append(os.path.abspath(os.path.join('..', 'src')))
-
 import gym
 import argparse
-
 import torch
 import torch.optim as optim
-
 from tensorboardX import SummaryWriter
-
-import loss
-import actions, agents, runner, common, wrapper, runner
+import actions
+import agents
+import runner
+import wrapper
 from models import dqn_model
 from common import hyperparameters, logger
 from memory import ExperienceReplayBuffer
+
 
 
 

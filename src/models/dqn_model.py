@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 import numpy as np
-from .layers import NoisyLinear
+from .ops import NoisyLinear, get_conv_out
 
 
 class DQN(nn.Module):
@@ -20,16 +20,12 @@ class DQN(nn.Module):
             nn.ReLU()
         )
 
-        conv_out_size = self._get_conv_out(input_shape)
+        conv_out_size = get_conv_out(input_shape)
         self.fc = nn.Sequential(
             nn.Linear(conv_out_size, 512),
             nn.ReLU(),
             nn.Linear(512, n_actions)
         )
-
-    def _get_conv_out(self, shape):
-        o = self.conv(torch.zeros(1, *shape))
-        return int(np.prod(o.size()))
 
     def forward(self, x):
         fx = x.float() / 256
@@ -53,7 +49,7 @@ class NoisyDQN(nn.Module):
             nn.ReLU()
         )
 
-        conv_out_size = self._get_conv_out(input_shape)
+        conv_out_size = get_conv_out(input_shape)
         self.noisy_layers = [
             NoisyLinear(conv_out_size, 512),
             NoisyLinear(512, n_actions)
@@ -63,10 +59,6 @@ class NoisyDQN(nn.Module):
             nn.ReLU(),
             self.noisy_layers[1]
         )
-
-    def _get_conv_out(self, shape):
-        o = self.conv(torch.zeros(1,*shape))
-        return int(np.prod(o.size()))
 
     def forward(self, x):
         # reshape input to be normalised
@@ -83,7 +75,7 @@ class NoisyDQN(nn.Module):
 
 class DuelingDQN(nn.Module):
     def __init__(self, input_shape, n_actions):
-        super(DuelingDQN, self).__init__():
+        super(DuelingDQN, self).__init__()
 
         self.conv = nn.Sequential(
             nn.Conv2d(input_shape[0], 32, kernel_size=8, stride=4),
@@ -94,7 +86,7 @@ class DuelingDQN(nn.Module):
             nn.ReLU()
         )
 
-        conv_out_size = self._get_conv_out(input_shape)
+        conv_out_size = get_conv_out(input_shape)
 
         self.fc_advantage = nn.Sequential(
             nn.Linear(conv_out_size, 512),
@@ -108,10 +100,6 @@ class DuelingDQN(nn.Module):
             nn.Linear(512, 1)
         )
 
-    def _get_conv_out(self, shape):
-        o = self.conv(torch.zeros(1,*shape))
-        return int(np.prod(o.size()))
-
     def forward(self, x):
         fx = x.float() / 256
         conv_out = self.conv(fx).view(fx.size()[0], -1)
@@ -119,3 +107,58 @@ class DuelingDQN(nn.Module):
         advantage = self.fc_advantage(conv_out)
 
         return value + advantage - advantage.mean()
+
+class DistributionalDQN(nn.Module):
+    """
+    implementation of a DQN conv network with a categorical distribution at the head of the network instead of the
+    discrete actions. Also known as C51
+    """
+
+    def __init__(self, input_shape, n_actions, n_atoms=51, v_min=-10, v_max=10):
+        super(DistributedDQN, self).__init__()
+
+        self.n_atoms = n_atoms
+        self.Vmin = -10
+        self.Vmax = 10
+        self.delta_z = (self.Vmax - self.Vmin) / (self.n_atoms - 1)
+
+        self.conv = nn.Sequential(
+            nn.Conv2d(input_shape[0], 32, kernel_size=8, stride=4),
+            nn.ReLU(),
+            nn.Conv2d(32, 64, kernel_size=4, stride=2),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1),
+            nn.ReLU()
+        )
+
+        conv_out_size = get_conv_out(input_shape)
+
+        self.fc_advantage = nn.Sequential(
+            nn.Linear(conv_out_size, 512),
+            nn.ReLU(),
+            nn.Linear(512, n_actions * self.n_atoms)
+        )
+
+        self.register_buffer("supports", torch.arange(self.Vmin,self.Vmax + self.delta_z, self.delta_z))
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, x):
+        batch_size = x.size()[0]
+        fx = x.float() / 256
+        conv_out = self.conv(fx).view(batch_size, -1)
+        fc_out = self.fc(conv_out)
+        return fc_out.view(batch_size, -1 , self.n_atoms)
+
+    def both(self, x):
+        category_output = self(x)
+        probabilities = self.apply_softmax(category_output)
+        weights = probabilities * self.supports
+        values = weights.sum(dim=2)
+
+        return category_output, values
+
+    def qvals(self, x):
+        return self.both(x)[1]
+
+    def apply_softmax(self, t):
+        return self.softmax(t.view(-1, self.n_atoms)).view(t.size())

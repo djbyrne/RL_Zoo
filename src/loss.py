@@ -1,8 +1,10 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import numpy as np
 
 from .common import utils
+from .models import ops
 
 
 def calc_loss_dqn(batch, net, tgt_net, gamma=0.99, device="cpu", double=True):
@@ -45,7 +47,9 @@ def calc_loss_dqn(batch, net, tgt_net, gamma=0.99, device="cpu", double=True):
 
 def calc_weighted_loss_dqn(batch, batch_weights, net, tgt_net, gamma=0.99, device="cpu", double=True):
     """
-    Calculate the mean squared error (MSE) of the sampled batch
+    Calculate the mean squared error (MSE) of the sampled batch for weighted experiences such as when
+    using Prioritized Experience Replay (PER)
+
     :param batch: sampled experiences
     :param batch_weights: the priority
     :param net: main network
@@ -86,3 +90,33 @@ def calc_weighted_loss_dqn(batch, batch_weights, net, tgt_net, gamma=0.99, devic
     losses_v = batch_weights_v * (state_action_values - expected_state_action_values) ** 2
     return losses_v.mean(), losses_v + 1e-5
 
+
+def calc_loss_distributional(batch, net, tgt_net, gamma=0.99, device="cpu", double=True, v_min=-10, v_max=10, n_atoms=51):
+    # unpack batch of experience
+    states, actions, rewards, dones, next_states = utils.unpack_batch(batch)
+    batch_size = len(batch)
+
+    states_v = torch.tensor(states).to(device)
+    next_states_v = torch.tensor(next_states).to(device)
+    actions_v = torch.tensor(actions).to(device)
+
+    # next state distribution
+    next_distr_v, next_qvals_v = tgt_net.both(next_states_v)
+    next_actions = next_qvals_v.max(1)[1].data.cpu().numpy()
+    next_distr = tgt_net.apply_softmax(next_distr_v).data.cpu().numpy()
+
+    next_best_distr = next_distr[range(batch_size), next_actions]
+    dones = dones.astype(np.bool)
+
+    # project distribution
+    projected_distribution = ops.distr_projection(next_best_distr, rewards, dones, v_min, v_max, n_atoms, gamma)
+
+    # calculate network output
+    distr_v = net(states_v)
+    state_action_values = distr_v[range(batch_size), actions_v.data]
+    state_activation_v = F.log_softmax(state_action_values, dim=1)
+    projected_distribution_v = torch.tensor(projected_distribution).to(device)
+
+    loss_v = -state_activation_v * projected_distribution_v
+
+    return loss_v.sum(dim=1).mean()

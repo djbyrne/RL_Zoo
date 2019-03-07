@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 import sys
 import os
@@ -15,7 +14,6 @@ import wrapper
 from models import dqn_model
 from common import hyperparameters, logger
 from memory import ExperienceReplayBuffer
-
 
 
 if __name__ == "__main__":
