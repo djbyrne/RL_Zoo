@@ -18,37 +18,37 @@ from memory import ExperienceReplayBuffer
 
 
 if __name__ == "__main__":
-	#CONFIG
+	# CONFIG
 	params = hyperparameters.PARAMS['pong']
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--cuda", default=False, action="store_true", help="Enable Cuda")
 	args = parser.parse_args()
 	device = torch.device("cuda" if args.cuda else "cpu")
 
-	#INIT ENV
+	# INIT ENV
 	env = gym.make(params['env_name'])
 	env = wrapper.wrap_dqn(env)
 
-	#LOGGING
+	# LOGGING
 	writer = SummaryWriter(comment="-" + params['run_name'] + "-basic")
 
-	#NETWORK
+	# NETWORK
 	net = dqn_model.DQN(env.observation_space.shape, env.action_space.n).to(device)
 	tgt_net = agents.TargetNetwork(net)
 
-	#AGENT
+	# AGENT
 	selector = actions.EpsilonGreedyActionSelector(epsilon=params['epsilon_start'])
 	epsilon_tracker = logger.EpsilonTracker(selector, params)
 	agent = agents.DQNAgent(net, selector, device=device)
 
-	#RUNNER
+	# RUNNER
 	exp_source = runner.RunnerSourceFirstLast(env, agent, gamma=params['gamma'],steps_count=1)
 	buffer = ExperienceReplayBuffer(exp_source,buffer_size=params['replay_size'])
 	optimizer = optim.Adam(net.parameters(), lr=params['learning_rate'])
 
 	frame_idx = 0
 
-	#TRAIN	
+	# TRAIN
 	with logger.RewardTracker(writer, params['stop_reward']) as reward_tracker:
 		while True:
 			frame_idx += 1
@@ -63,7 +63,7 @@ if __name__ == "__main__":
 			if len(buffer) < params['replay_initial']:
 				continue
 
-			#learning step
+			# learning step
 			optimizer.zero_grad()
 			batch = buffer.sample(params['batch_size'])
 			loss_v = agent.calc_loss(batch, net, tgt_net.target_model,params['gamma'],device)
