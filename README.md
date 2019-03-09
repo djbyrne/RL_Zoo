@@ -56,5 +56,36 @@ To set up your python environment to run the code in this repository, follow the
     ```bash
 	  pip install opencv-python
 	```
+	
+## To Do:
+
+### Algorithms
+
+- ~~DQN~~
+- ~~Double DQN~~
+- ~~Dueling DQN~~
+- ~~DQN PER~~
+- ~~Distributional DQN (C51)~~
+- ~~Noisy DQN~~
+- Rainbow
+- REINFORCE
+- A2C
+- A3C
+- PPO
+- DDPG
+- D4PG
+- GAIL
+- I2A
+
+### Library
+
+- Environment Wrappers
+Ideally the library will automatically detect what environment you are using and assign the correct type of wrapper/network to use it
+
+- Refactor parameters file
+Include the entire architecture of the network inside the param file denoting the number of layers and nodes in a network
+
+- Evaluation Script
+After training evaluate the performance of an agent over the course of 100 episodes or against a proven baseline such as OpenAI  Baselines
    
 
