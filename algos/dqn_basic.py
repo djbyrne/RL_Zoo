@@ -29,7 +29,7 @@ if __name__ == "__main__":
 	device = torch.device("cuda" if args.cuda else "cpu")
 
 	# INIT ENV
-	env, observation_space, action_space = build_env_wrapper(params['env_name'], env_type='unity')
+	env, observation_space, action_space = build_env_wrapper(params['env_name'], env_type=params['env_type'])
 
 	# LOGGING
 	writer = SummaryWriter(comment="-" + params['run_name'] + "-basic")
