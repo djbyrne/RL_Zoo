@@ -10,10 +10,10 @@ from tensorboardX import SummaryWriter
 import actions
 import agents
 import runner
-import wrapper
+from wrapper import build_env_wrapper
 from networks import dqn_cnn_net
 from common import hyperparameters, logger
-from memory import ExperienceReplayBuffer
+from memory import PrioritizedExperienceReplayBuffer
 
 
 
@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     # RUNNER
     exp_source = runner.RunnerSourceFirstLast(env, agent, gamma=params['gamma'],steps_count=3)
-    buffer = ExperienceReplayBuffer(exp_source,buffer_size=params['replay_size'])
+    buffer = PrioritizedExperienceReplayBuffer(exp_source,buffer_size=params['replay_size'])
     optimizer = optim.Adam(net.parameters(), lr=params['learning_rate'])
 
 
