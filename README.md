@@ -1,4 +1,4 @@
-# RL_Zoo
+# RL_Zoo (In Progress)
 Library with clean, simple and modular implementations of the main RL algorithms
 
 ## Dependencies
