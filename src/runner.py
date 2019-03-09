@@ -9,6 +9,7 @@ import numpy as np
 from collections import namedtuple, deque
 
 from agents import BaseAgent
+from wrapper import UnityWrapper
 # from common import utils
 
 # one single experience step
@@ -20,7 +21,7 @@ class Runner:
     Simple n-step experience source using single or multiple environments
     Every experience contains n list of Experience entries
     """
-    def __init__(self, env, agent, steps_count=2, steps_delta=1, vectorized=False):
+    def __init__(self, env, agent, steps_count=1, steps_delta=1, vectorized=False):
         """
         Create simple experience source
         :param env: environment or list of environments to be used
@@ -29,7 +30,8 @@ class Runner:
         :param steps_delta: how many steps to do between experience items
         :param vectorized: support of vectorized envs from OpenAI universe
         """
-        assert isinstance(env, (gym.Env, list, tuple))
+
+        assert isinstance(env, (gym.Env, UnityWrapper, list, tuple))
         assert isinstance(agent, BaseAgent)
         assert isinstance(steps_count, int)
         assert steps_count >= 1
@@ -38,13 +40,14 @@ class Runner:
             self.pool = env
         else:
             self.pool = [env]
+
         self.agent = agent
         self.steps_count = steps_count
-        print(steps_count)
         self.steps_delta = steps_delta
         self.total_rewards = []
         self.total_steps = []
         self.vectorized = vectorized
+
 
     def __iter__(self):
         states, agent_states, histories, cur_rewards, cur_steps = [], [], [], [], []
@@ -99,6 +102,8 @@ class Runner:
                 else:
                     next_state, r, is_done, _ = env.step(action_n[0])
                     next_state_n, r_n, is_done_n = [next_state], [r], [is_done]
+
+                # env.render()
 
                 #process next states and rewards
                 for ofs, (action, next_state, r, is_done) in enumerate(zip(action_n, next_state_n, r_n, is_done_n)):

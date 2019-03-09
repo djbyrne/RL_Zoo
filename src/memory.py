@@ -83,13 +83,13 @@ class PrioritizedExperienceReplayBuffer:
     to the training loss
     """
 
-    def __init__(self, runner, buff_size, prob_alpha=0.6):
+    def __init__(self, runner, buffer_size, prob_alpha=0.6):
         self.runner_iterator = iter(runner)
         self.prob_alpha = prob_alpha
-        self.capacity = buff_size
+        self.capacity = buffer_size
         self.position = 0
         self.buffer = []
-        self.priorities = np.zeros((buff_size,), dtype=np.float32)
+        self.priorities = np.zeros((buffer_size,), dtype=np.float32)
 
     def __len__(self):
         return len(self.buffer)

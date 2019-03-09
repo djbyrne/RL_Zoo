@@ -1,6 +1,9 @@
 """
 Agent is something which converts states into actions and has state
 """
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join('..', 'src')))
 import copy
 import numpy as np
 import torch
@@ -8,7 +11,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 import actions
-from .common import utils
+from common import utils
 
 
 class BaseAgent:

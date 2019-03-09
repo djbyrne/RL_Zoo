@@ -5,6 +5,74 @@ from collections import deque
 import gym
 from gym import spaces
 import cv2
+from unityagents import UnityEnvironment
+
+ENV_PATH = "/Users/donalbyrne/Workspace/RL_Zoo/src/environments/"
+
+
+
+class EnvWrapper:
+    def __init__(self, env_name):
+        self.env_name = env_name
+        self.env = gym.make(self.env_name)
+        self.observation_space = self.env.observation_space 
+        self.action_space = self.env.action_space           
+                
+    def reset(self):
+        state = self.env.reset()
+        return state
+        
+    def get_random_action(self):
+        action = self.env.action_space.sample()   
+        return action
+        
+    def step(self, action):        
+        next_state, reward, terminal, _ = self.env.step(action)        
+        return next_state, reward, terminal
+    
+    def set_random_seed(self, seed):
+        self.env.seed(seed)
+        
+    def render(self):
+        frame = self.env.render(mode='rgb_array')
+        return frame
+        
+    def close(self):
+        self.env.close()
+
+class UnityWrapper:
+    """
+    wrapper for the unity environment to match the gym interface
+    """
+
+    def __init__(self, env_path):
+        self.env_path = env_path
+        self.env = UnityEnvironment(file_name=env_path)
+        self.brain_name = self.env.brain_names[0]
+        self.brain = self.env.brains[self.brain_name]
+        self.env_info = self.env.reset(train_mode=True)[self.brain_name]
+        self.observation_space = self.env_info.vector_observations[0]
+        self.action_space_size = self.brain.vector_action_space_size
+
+    def reset(self):
+        self.env_info = self.env.reset(train_mode=True)[self.brain_name]
+        return self.env_info.vector_observations[0]
+
+    def get_random_action(self):
+        action = random.randint(0,self.action_space)
+        return action
+
+    def step(self, action):
+        self.env_info = self.env.step(action)[self.brain_name]   
+        next_state = self.env_info.vector_observations[0]
+        reward = self.env_info.rewards[0]                   
+        done = self.env_info.local_done[0]
+
+        return next_state, reward, done, None
+
+    def close(self):
+        self.env.close()
+
 
 class NoopResetEnv(gym.Wrapper):
 
@@ -219,20 +287,59 @@ class ImageToPyTorch(gym.ObservationWrapper):
         return np.swapaxes(observation, 2, 0)
 
 
+def build_env_wrapper(env_name, env_type='basic'):
+    """
+    takes in environment name and builds the environment wrapper accordingly
+
+    Args:
+        env_name: the name of the environment
+        type: what library does it belong to
+            - basic
+            - atari
+            - unity
+            - doom
+
+    Returns:
+        environment object with appropriate wrapping
+    """
+    if env_type == 'basic':
+        env = gym.make(env_name)
+        return env, env.observation_space.shape, env.action_space.n
+    elif env_type == 'atari':
+        env = gym.make(env_name)
+        env = wrap_dqn_atari(env)
+        return env, env.observation_space.shape, env.action_space.n
+    elif env_type == 'unity':
+        # return UnityEnv(ENV_PATH+env_name, worker_id=0, use_visual=True)
+        env = UnityWrapper(ENV_PATH+env_name)
+        return env, env.observation_space, env.action_space_size 
         
 
-def wrap_dqn(env, stack_frames=4, episodic_life=True, reward_clipping=True):
-    """Apply a common set of wrappers for Atari games."""
+def wrap_dqn_atari(env, cnn=True, stack_frames=4, episodic_life=True, reward_clipping=True):
+    """Apply a common set of wrappers for Atari games that require vision.
+
+    Args:
+        env(obj): environment being used
+        stack_frames(int): how many states to merge into one
+        episodic_life(bool): is the environment reset after an episode
+        reward_clipping(bool): limit range of rewards
+
+    Returns:
+        environment with selected wrappers applied
+
+    """
     assert 'NoFrameskip' in env.spec.id
     if episodic_life:
         env = EpisodicLifeEnv(env)
-    env = NoopResetEnv(env, noop_max=30)
+    #env = NoopResetEnv(env, noop_max=30)
     env = MaxAndSkipEnv(env, skip=4)
     if 'FIRE' in env.unwrapped.get_action_meanings():
         env = FireResetEnv(env)
-    env = ProcessFrame84(env)
-    env = ImageToPyTorch(env)
-    env = FrameStack(env, stack_frames)
+    if cnn:
+        env = ProcessFrame84(env)
+        env = ImageToPyTorch(env)
+        env = FrameStack(env, stack_frames)
     if reward_clipping:
         env = ClippedRewardsWrapper(env)
     return env
+
