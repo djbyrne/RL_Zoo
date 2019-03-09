@@ -11,9 +11,10 @@ from tensorboardX import SummaryWriter
 import actions
 import agents
 import runner
+from wrapper import build_env_wrapper
 import wrapper
 import loss
-from models import dqn_model
+from networks import dqn_cnn_net, dqn_mlp_net
 from common import hyperparameters, logger
 from memory import ExperienceReplayBuffer
 
@@ -21,21 +22,20 @@ from memory import ExperienceReplayBuffer
 
 if __name__ == "__main__":
 	# CONFIG
-	params = hyperparameters.PARAMS['lunarlander']
+	params = hyperparameters.PARAMS['banana']
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--cuda", default=False, action="store_true", help="Enable Cuda")
 	args = parser.parse_args()
 	device = torch.device("cuda" if args.cuda else "cpu")
 
 	# INIT ENV
-	env = gym.make(params['env_name'])
-	# env = wrapper.wrap_dqn_atari(env, cnn=False, stack_frames=1)
+	env, observation_space, action_space = build_env_wrapper(params['env_name'], env_type='unity')
 
 	# LOGGING
 	writer = SummaryWriter(comment="-" + params['run_name'] + "-basic")
 
 	# NETWORK
-	net = dqn_model.DQN(env.observation_space.shape, env.action_space.n).to(device)
+	net = dqn_mlp_net.Network(observation_space.shape, action_space).to(device)
 	tgt_net = agents.TargetNetwork(net)
 
 	# AGENT
