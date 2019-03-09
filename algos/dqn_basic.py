@@ -21,7 +21,7 @@ from memory import ExperienceReplayBuffer
 
 if __name__ == "__main__":
 	# CONFIG
-	params = hyperparameters.PARAMS['cartpole']
+	params = hyperparameters.PARAMS['lunarlander']
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--cuda", default=False, action="store_true", help="Enable Cuda")
 	args = parser.parse_args()

@@ -11,7 +11,7 @@ import torch.optim as optim
 from tensorboardX import SummaryWriter
 
 import actions, agents, runner, common, wrapper, runner
-from models import dqn_model
+from networks import dqn_noisy_net
 from common import hyperparameters, logger
 from memory import ExperienceReplayBuffer
 
@@ -25,13 +25,13 @@ if __name__ == "__main__":
 
     #INIT ENV
     env = gym.make(params['env_name'])
-    env = wrapper.wrap_dqn(env)
+    env = wrapper.wrap_dqn_atari(env)
 
     #LOGGING
-    writer = SummaryWriter(comment="-" + params['run_name'] + "-%d-step" % args.n)
+    writer = SummaryWriter(comment="-" + params['run_name'] + "-noisy")
 
     #NETWORK
-    net = dqn_model.NoisyDQN(env.observation_space.shape, env.action_space.n).to(device)
+    net = dqn_noisy_net.Network(env.observation_space.shape, env.action_space.n).to(device)
     tgt_net = agents.TargetNetwork(net)
 
     #AGENT
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     agent = agents.DQNAgent(net, selector, device=device)
 
     #RUNNER
-    exp_source = runner.RunnerSourceFirstLast(env, agent, gamma=params['gamma'],steps_count=args.n)		#increase the number of steps for the runner
+    exp_source = runner.RunnerSourceFirstLast(env, agent, gamma=params['gamma'])		#increase the number of steps for the runner
     buffer = ExperienceReplayBuffer(exp_source,buffer_size=params['replay_size'])
     optimizer = optim.Adam(net.parameters(), lr=params['learning_rate'])
 
@@ -62,7 +62,7 @@ if __name__ == "__main__":
             # learning step
             optimizer.zero_grad()
             batch = buffer.sample(params['batch_size'])
-            loss_v = agent.calc_loss(batch, net, tgt_net.target_model,params['gamma'],device)		#increase gamma by n-steps
+            loss_v = loss.calc_loss_dqn(batch, net, tgt_net.target_model,params['gamma'],device)		#increase gamma by n-steps
             loss_v.backward()
             optimizer.step()
 

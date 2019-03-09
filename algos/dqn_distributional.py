@@ -11,9 +11,11 @@ import actions
 import agents
 import runner
 import wrapper
-from models import dqn_model
+import loss
+from networks import dqn_distributional_net
 from common import hyperparameters, logger
 from memory import ExperienceReplayBuffer
+
 
 
 if __name__ == "__main__":
@@ -26,13 +28,13 @@ if __name__ == "__main__":
 
 	# INIT ENV
 	env = gym.make(params['env_name'])
-	env = wrapper.wrap_dqn(env)
+	env = wrapper.wrap_dqn_atari(env)
 
 	# LOGGING
 	writer = SummaryWriter(comment="-" + params['run_name'] + "-distrib")
 
 	# NETWORK
-	net = dqn_model.DistributionalDQN(env.observation_space.shape, env.action_space.n).to(device)
+	net = dqn_distributional_net.Network(env.observation_space.shape, env.action_space.n).to(device)
 	tgt_net = agents.TargetNetwork(net)
 
 	# AGENT
@@ -65,7 +67,7 @@ if __name__ == "__main__":
 			# learning step
 			optimizer.zero_grad()
 			batch = buffer.sample(params['batch_size'])
-			loss_v = agent.calc_loss(batch, net, tgt_net.target_model,params['gamma'],device)
+			loss_v = loss.calc_loss_distributional(batch, net, tgt_net.target_model,params['gamma'],device)
 			loss_v.backward()
 			optimizer.step()
 

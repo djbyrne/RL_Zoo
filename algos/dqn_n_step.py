@@ -11,14 +11,14 @@ import torch.optim as optim
 
 from tensorboardX import SummaryWriter
 
-import actions, agents, runner, common, wrapper, runner
-from models import dqn_model
+import actions, agents, runner, common, wrapper, runner, loss
+from networks import dqn_cnn_net
 from common import hyperparameters, logger
 from memory import ExperienceReplayBuffer
 
 
 if __name__ == "__main__":
-	#CONFIG
+	# CONFIG
 	params = hyperparameters.PARAMS['pong']
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--cuda", default=False, action="store_true", help="Enable Cuda")
@@ -26,30 +26,30 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 	device = torch.device("cuda" if args.cuda else "cpu")
 
-	#INIT ENV
+	# INIT ENV
 	env = gym.make(params['env_name'])
-	env = wrapper.wrap_dqn(env)
+	env = wrapper.wrap_dqn_atari(env)
 
-	#LOGGING
+	# LOGGING
 	writer = SummaryWriter(comment="-" + params['run_name'] + "-%d-step" % args.n)
 
-	#NETWORK
-	net = dqn_model.DQN(env.observation_space.shape, env.action_space.n).to(device)
+	# NETWORK
+	net = dqn_cnn_net.Network(env.observation_space.shape, env.action_space.n).to(device)
 	tgt_net = agents.TargetNetwork(net)
-
-	#AGENT
+ 
+	# AGENT
 	selector = actions.EpsilonGreedyActionSelector(epsilon=params['epsilon_start'])
 	epsilon_tracker = logger.EpsilonTracker(selector, params)
 	agent = agents.DQNAgent(net, selector, device=device)
 
-	#RUNNER
+	# RUNNER
 	exp_source = runner.RunnerSourceFirstLast(env, agent, gamma=params['gamma'],steps_count=args.n)		#increase the number of steps for the runner
 	buffer = ExperienceReplayBuffer(exp_source,buffer_size=params['replay_size'])
 	optimizer = optim.Adam(net.parameters(), lr=params['learning_rate'])
 
 	frame_idx = 0
 
-	#TRAIN	
+	# TRAIN	
 	with logger.RewardTracker(writer, params['stop_reward']) as reward_tracker:
 		while True:
 			frame_idx += 1
@@ -67,7 +67,7 @@ if __name__ == "__main__":
 			#learning step
 			optimizer.zero_grad()
 			batch = buffer.sample(params['batch_size'])
-			loss_v = agent.calc_loss(batch, net, tgt_net.target_model,params['gamma']**args.n,device)		#increase gamma by n-steps
+			loss_v = loss.calc_loss_dqn(batch, net, tgt_net.target_model,params['gamma']**args.n,device)		#increase gamma by n-steps
 			loss_v.backward()
 			optimizer.step()
 

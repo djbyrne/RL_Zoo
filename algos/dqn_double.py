@@ -12,7 +12,8 @@ import actions
 import agents
 import runner
 import wrapper
-from models import dqn_model
+import loss
+from networks import dqn_cnn_net
 from common import hyperparameters, logger
 from memory import ExperienceReplayBuffer
 
@@ -30,13 +31,13 @@ if __name__ == "__main__":
 
 	#INIT ENV
 	env = gym.make(params['env_name'])
-	env = wrapper.wrap_dqn(env)
+	env = wrapper.wrap_dqn_atari(env)
 
 	#LOGGING
 	writer = SummaryWriter(comment="-" + params['run_name'] + "-%d-step" % args.n)
 
 	#NETWORK
-	net = dqn_model.DQN(env.observation_space.shape, env.action_space.n).to(device)
+	net = dqn_cnn_net.Network(env.observation_space.shape, env.action_space.n).to(device)
 	tgt_net = agents.TargetNetwork(net)
 
 	#AGENT
@@ -69,7 +70,7 @@ if __name__ == "__main__":
 			#learning step
 			optimizer.zero_grad()
 			batch = buffer.sample(params['batch_size'])
-			loss_v = agent.calc_loss(batch, net, tgt_net.target_model,gamma=params['gamma']**args.n,device=device, double=args.double)		#increase gamma by n-steps
+			loss_v = loss.calc_loss_dqn(batch, net, tgt_net.target_model,gamma=params['gamma']**args.n,device=device, double=args.double)		#increase gamma by n-steps
 			loss_v.backward()
 			optimizer.step()
 

@@ -11,7 +11,7 @@ import actions
 import agents
 import runner
 import wrapper
-from models import dqn_model
+from networks import dqn_cnn_net
 from common import hyperparameters, logger
 from memory import ExperienceReplayBuffer
 
@@ -28,13 +28,13 @@ if __name__ == "__main__":
 
     # INIT ENV
     env = gym.make(params['env_name'])
-    env = wrapper.wrap_dqn(env)
+    env = wrapper.wrap_dqn_atari(env)
 
     # LOGGING
     writer = SummaryWriter(comment="-" + params['run_name'] + "-PER")
 
     # NETWORK
-    net = dqn_model.DQN(env.observation_space.shape, env.action_space.n).to(device)
+    net = dqn_cnn_net.Network(env.observation_space.shape, env.action_space.n).to(device)
     tgt_net = agents.TargetNetwork(net)
 
     # AGENT
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     agent = agents.DQNAgent(net, selector, device=device)
 
     # RUNNER
-    exp_source = runner.RunnerSourceFirstLast(env, agent, gamma=params['gamma'],steps_count=1)
+    exp_source = runner.RunnerSourceFirstLast(env, agent, gamma=params['gamma'],steps_count=3)
     buffer = ExperienceReplayBuffer(exp_source,buffer_size=params['replay_size'])
     optimizer = optim.Adam(net.parameters(), lr=params['learning_rate'])
 
