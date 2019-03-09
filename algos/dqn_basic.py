@@ -12,6 +12,7 @@ import actions
 import agents
 import runner
 import wrapper
+import loss
 from models import dqn_model
 from common import hyperparameters, logger
 from memory import ExperienceReplayBuffer
@@ -20,7 +21,7 @@ from memory import ExperienceReplayBuffer
 
 if __name__ == "__main__":
 	# CONFIG
-	params = hyperparameters.PARAMS['pong']
+	params = hyperparameters.PARAMS['cartpole']
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--cuda", default=False, action="store_true", help="Enable Cuda")
 	args = parser.parse_args()
@@ -28,7 +29,7 @@ if __name__ == "__main__":
 
 	# INIT ENV
 	env = gym.make(params['env_name'])
-	env = wrapper.wrap_dqn(env)
+	# env = wrapper.wrap_dqn_atari(env, cnn=False, stack_frames=1)
 
 	# LOGGING
 	writer = SummaryWriter(comment="-" + params['run_name'] + "-basic")
@@ -67,7 +68,7 @@ if __name__ == "__main__":
 			# learning step
 			optimizer.zero_grad()
 			batch = buffer.sample(params['batch_size'])
-			loss_v = agent.calc_loss(batch, net, tgt_net.target_model,params['gamma'],device)
+			loss_v = loss.calc_loss_dqn(batch, net, tgt_net.target_model,params['gamma'],device)
 			loss_v.backward()
 			optimizer.step()
 

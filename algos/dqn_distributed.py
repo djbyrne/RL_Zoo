@@ -29,16 +29,16 @@ if __name__ == "__main__":
 	env = wrapper.wrap_dqn(env)
 
 	# LOGGING
-	writer = SummaryWriter(comment="-" + params['run_name'] + "-basic")
+	writer = SummaryWriter(comment="-" + params['run_name'] + "-distrib")
 
 	# NETWORK
-	net = dqn_model.DQN(env.observation_space.shape, env.action_space.n).to(device)
+	net = dqn_model.DistributionalDQN(env.observation_space.shape, env.action_space.n).to(device)
 	tgt_net = agents.TargetNetwork(net)
 
 	# AGENT
 	selector = actions.EpsilonGreedyActionSelector(epsilon=params['epsilon_start'])
 	epsilon_tracker = logger.EpsilonTracker(selector, params)
-	agent = agents.DQNAgent(net, selector, device=device)
+	agent = agents.DQNAgent(lambda x: net.qvals(x), selector, device=device)
 
 	# RUNNER
 	exp_source = runner.RunnerSourceFirstLast(env, agent, gamma=params['gamma'],steps_count=1)
