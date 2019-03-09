@@ -79,19 +79,22 @@ To set up your python environment to run the code in this repository, follow the
 
 ### Library
 
-- Environment Wrappers
-* Allow for multiple envrionement types:
+**Environment Wrappers
+
+- Allow for multiple envrionement types:
 	- [X] basic gym
 	- [X] box2d
 	- [X] atari
 	- [X] unity 
 	
-* Ideally the library will automatically detect what environment you are using and assign the correct type of wrapper/network to use it
+- Ideally the library will automatically detect what environment you are using and assign the correct type of wrapper/network to use it
 
-- Refactor parameters file
-* Include the entire architecture of the network inside the param file denoting the number of layers and nodes in a network
+**Refactor parameters file
 
-- Evaluation Script
-* After training evaluate the performance of an agent over the course of 100 episodes or against a proven baseline such as OpenAI  Baselines
+- Include the entire architecture of the network inside the param file denoting the number of layers and nodes in a network
+
+**Evaluation Script
+
+- After training evaluate the performance of an agent over the course of 100 episodes or against a proven baseline such as OpenAI  Baselines
    
 
