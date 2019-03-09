@@ -61,12 +61,12 @@ To set up your python environment to run the code in this repository, follow the
 
 ### Algorithms
 
-- DQN [X]
+- [X] DQN
 - [X] Double DQN
-- ~~Dueling DQN~~
-- ~~DQN PER~~
-- ~~Distributional DQN (C51)~~
-- ~~Noisy DQN~~
+- [X] Dueling DQN
+- [X] DQN PER
+- [X] Distributional DQN (C51)
+- [X] Noisy DQN
 - Rainbow
 - REINFORCE
 - A2C
