@@ -61,8 +61,8 @@ To set up your python environment to run the code in this repository, follow the
 
 ### Algorithms
 
-- ~~DQN~~
-- ~~Double DQN~~
+- DQN [X]
+- [X] Double DQN
 - ~~Dueling DQN~~
 - ~~DQN PER~~
 - ~~Distributional DQN (C51)~~
