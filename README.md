@@ -1,5 +1,6 @@
 # RL Zoo (In Progress)
-Library with clean, simple and modular implementations of the main RL algorithms
+The goal of this repo is to provide simple and clean examples of the major Reinforcement Learning algorithms within a range 
+of environments. 
 
 ## Dependencies
 
@@ -67,15 +68,15 @@ To set up your python environment to run the code in this repository, follow the
 - [X] DQN PER
 - [X] Distributional DQN (C51)
 - [X] Noisy DQN
-- Rainbow
-- REINFORCE
-- A2C
-- A3C
-- PPO
-- DDPG
-- D4PG
-- GAIL
-- I2A
+- [ ] Rainbow
+- [ ] REINFORCE
+- [ ] A2C
+- [ ] A3C
+- [ ] PPO
+- [ ] DDPG
+- [ ] D4PG
+- [ ] GAIL
+- [ ] I2A
 
 ### Library
 
@@ -96,5 +97,16 @@ To set up your python environment to run the code in this repository, follow the
 **Evaluation Script**
 
 - After training evaluate the performance of an agent over the course of 100 episodes or against a proven baseline such as OpenAI  Baselines
+
+**Unit Test Key Areas**
+
+ - [ ] Network
+ - [ ] Loss function
+ - [ ] Experience Buffer
+ - [ ] Runner
+
+ ## References
+
+ This library is based off the examples used in the book "Deep Reinforcement Learning Hands-On" by Max Lapan although I have re-written most of the architecture and algorithms in a way that makes sense to me. Lapans book is by far one of the best titles on the subject of RL and I would highly recommend it.
    
 

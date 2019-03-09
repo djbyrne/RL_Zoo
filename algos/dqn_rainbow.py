@@ -11,7 +11,7 @@ import actions
 import agents
 import runner
 from wrapper import build_env_wrapper
-import loss
+from loss import 
 from networks import dqn_rainbow_net
 from common import hyperparameters, logger
 from memory import PrioritizedExperienceReplayBuffer
@@ -70,8 +70,8 @@ if __name__ == "__main__":
 			# learning step
 			optimizer.zero_grad()
 			batch, batch_indices, batch_weights = buffer.sample(params['batch_size'], beta)
-			loss_v, sample_prios_v = calc_loss(batch, batch_weights, net, tgt_net.target_model,
-                                               params['gamma'] ** 2, device=device)
+			loss_v, sample_prios_v = calc_loss_rainbow(batch, batch_weights, net, tgt_net.target_model,
+				params['gamma'] ** 2, device=device)
 			loss_v.backward()
 			optimizer.step()
 

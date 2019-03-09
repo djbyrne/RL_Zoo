@@ -19,6 +19,9 @@ class ArgmaxActionSelector(ActionSelector):
 
 
 class EpsilonGreedyActionSelector(ActionSelector):
+    """
+    Selects action based on the epsilon greedy policy
+    """
     def __init__(self, epsilon=0.5, selector=ArgmaxActionSelector()):
         self.epsilon = epsilon
         self.selector = selector

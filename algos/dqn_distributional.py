@@ -10,7 +10,7 @@ from tensorboardX import SummaryWriter
 import actions
 import agents
 import runner
-import wrapper
+from wrapper import build_env_wrapper
 import loss
 from networks import dqn_distributional_net
 from common import hyperparameters, logger

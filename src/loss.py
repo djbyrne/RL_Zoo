@@ -13,14 +13,19 @@ from networks import ops
 
 def calc_loss_dqn(batch, net, tgt_net, gamma=0.99, device="cpu", double=True):
     """
-    Calculate the mean squared error (MSE) of the sampled batch
-    :param batch: sampled experiences
-    :param net: main network
-    :param tgt_net: tartget network
-    :param gamma: discount factor
-    :param device: what device to carry out matrix math
-    :param double: is this model use double Q learning
-    :return: the MSE of the samples in batch
+    Calculate the mean squared error (MSE) of the sampled batch for the distributional Q network
+
+        Args:
+            batch: sampled experiences
+            batch_weights: the priority
+            net: main network
+            tgt_net: tartget network
+            gamma: discount factor
+            device: what device to carry out matrix math
+            double: uses loss function for double learning
+
+        Returns:
+            mse: the MSE of the samples in batch
     """
 
     # unpack batch of experience
@@ -53,17 +58,19 @@ def calc_weighted_loss_dqn(batch, batch_weights, net, tgt_net, gamma=0.99, devic
     """
     Calculate the mean squared error (MSE) of the sampled batch for weighted experiences such as when
     using Prioritized Experience Replay (PER)
-
-    :param batch: sampled experiences
-    :param batch_weights: the priority
-    :param net: main network
-    :param tgt_net: tartget network
-    :param gamma: discount factor
-    :param device: what device to carry out matrix math
-    :param double: is this model use double Q learning
-
-    :return: mse: the MSE of the samples in batch
-    :return: losses_v: the individual losses of the sample batch with a small constant added
+    
+        Args:
+            batch: sampled experiences
+            batch_weights: the priority
+            net: main network
+            tgt_net: tartget network
+            gamma: discount factor
+            device: what device to carry out matrix math
+            double: is this model use double Q learning
+        
+        Returns:
+            mse: the MSE of the samples in batch
+            losses_v: the individual losses of the sample batch with a small constant added
     """
 
     # unpack batch of experience
@@ -95,7 +102,25 @@ def calc_weighted_loss_dqn(batch, batch_weights, net, tgt_net, gamma=0.99, devic
     return losses_v.mean(), losses_v + 1e-5
 
 
-def calc_loss_distributional(batch, net, tgt_net, gamma=0.99, device="cpu", double=True, v_min=-10, v_max=10, n_atoms=51):
+def calc_loss_distributional(batch, net, tgt_net, gamma=0.99, device="cpu", v_min=-10, v_max=10, n_atoms=51):
+    """
+    Calculate the mean squared error (MSE) of the sampled batch for the distributional Q network
+
+        Args:
+            batch: sampled experiences
+            batch_weights: the priority
+            net: main network
+            tgt_net: tartget network
+            gamma: discount factor
+            device: what device to carry out matrix math
+            v_min: minimum range of distribution
+            v_max: minimum range of distribution
+            n_atoms: how many buckets of distribution to use
+
+        Returns:
+            mse: the MSE of the loss values
+    """
+
     # unpack batch of experience
     states, actions, rewards, dones, next_states = utils.unpack_batch(batch)
     batch_size = len(batch)
@@ -125,7 +150,26 @@ def calc_loss_distributional(batch, net, tgt_net, gamma=0.99, device="cpu", doub
 
     return loss_v.sum(dim=1).mean()
 
-def calc_loss(batch, batch_weights, net, tgt_net, gamma, device="cpu"):
+def calc_loss_rainbow(batch, batch_weights, net, tgt_net, gamma, device="cpu", v_min=-10, v_max=10, n_atoms=51):
+    """
+    Calculate the mean squared error (MSE) of the sampled batch for the rainbow algorithm using double learning,
+    distributional q values and weighted q values.
+
+        Args:
+            batch: sampled experiences
+            batch_weights: the priority
+            net: main network
+            tgt_net: tartget network
+            gamma: discount factor
+            device: what device to carry out matrix math
+            v_min: minimum range of distribution
+            v_max: minimum range of distribution
+            n_atoms: how many buckets of distribution to use
+
+        Returns:
+            mse: the MSE of the samples in batch
+            losses_v: the individual losses of the sample batch with a small constant added
+    """
     states, actions, rewards, dones, next_states = utils.unpack_batch(batch)
     batch_size = len(batch)
 
