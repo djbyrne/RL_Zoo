@@ -68,7 +68,7 @@ To set up your python environment to run the code in this repository, follow the
 - [X] DQN PER
 - [X] Distributional DQN (C51)
 - [X] Noisy DQN
-- [ ] Rainbow
+- [X] Rainbow
 - [ ] REINFORCE
 - [ ] A2C
 - [ ] A3C
