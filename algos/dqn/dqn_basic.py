@@ -2,7 +2,7 @@
 #!/usr/bin/env python3
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join('..', 'src')))
+sys.path.append(os.path.abspath(os.path.join('../../', 'src')))
 import gym
 import argparse
 import torch
@@ -22,7 +22,7 @@ from memory import ExperienceReplayBuffer
 
 if __name__ == "__main__":
 	# CONFIG
-	params = hyperparameters.PARAMS['banana']
+	params = hyperparameters.PARAMS['cartpole']
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--cuda", default=False, action="store_true", help="Enable Cuda")
 	args = parser.parse_args()
@@ -35,7 +35,7 @@ if __name__ == "__main__":
 	writer = SummaryWriter(comment="-" + params['run_name'] + "-basic")
 
 	# NETWORK
-	net = dqn_mlp_net.Network(observation_space.shape, action_space).to(device)
+	net = dqn_mlp_net.Network(observation_space, action_space).to(device)
 	tgt_net = agents.TargetNetwork(net)
 
 	# AGENT
