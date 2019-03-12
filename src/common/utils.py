@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 
 def unpack_batch(batch):
     """
@@ -29,3 +30,35 @@ def calc_values_of_states(states, net, device="cpu"):
         best_action_values_v = action_values_v.max(1)[0]
         mean_vals.append(best_action_values_v.mean().item())
     return np.mean(mean_vals)
+
+def default_states_preprocessor(states):
+    """
+    Convert list of states into the form suitable for model. By default we assume Variable
+
+    Args:
+        states: list of numpy arrays with states
+
+    Returns:
+        cleaned variable
+    """
+
+    if len(states) == 1:
+        np_states = np.expand_dims(states[0], 0)
+    else:
+        np_states = np.array([np.array(s, copy=False) for s in states], copy=False)
+    return torch.tensor(np_states)
+
+
+def float32_preprocessor(states):
+    """
+    Convert list of states into the form suitable for model. By default we assume Variable
+
+    Args:
+        states: list of numpy arrays with states
+
+    Returns:
+        cleaned variable in the form of np.float32
+    """
+
+    np_states = np.array(states, dtype=np.float32)
+    return torch.tensor(np_states)

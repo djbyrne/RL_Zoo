@@ -31,5 +31,3 @@ class Network(nn.Module):
         x = x.float()
         x = F.relu(self.fc1(x))
         return self.fc2(x)
-
-

@@ -2,7 +2,7 @@ PARAMS = {
     'banana': {
         'env_name':         "Banana.app",
         'env_type':         'unity',
-        'stop_reward':      200.0,
+        'stop_reward':      200,
         'run_name':         'banana',
         'replay_size':      100000,
         'replay_initial':   1000,
@@ -17,7 +17,7 @@ PARAMS = {
     'cartpole': {
         'env_name':         "CartPole-v0",
         'env_type':         'basic',
-        'stop_reward':      200.0,
+        'stop_reward':      195,
         'run_name':         'cartpole',
         'replay_size':      100000,
         'replay_initial':   1000,

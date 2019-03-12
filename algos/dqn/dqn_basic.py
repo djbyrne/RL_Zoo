@@ -49,6 +49,7 @@ if __name__ == "__main__":
 	optimizer = optim.Adam(net.parameters(), lr=params['learning_rate'])
 
 	frame_idx = 0
+	done = False
 
 	# TRAIN
 	with logger.RewardTracker(writer, params['stop_reward']) as reward_tracker:
@@ -60,6 +61,7 @@ if __name__ == "__main__":
 			new_rewards = exp_source.pop_total_rewards()
 			if new_rewards:
 				if reward_tracker.reward(new_rewards[0], frame_idx, selector.epsilon):
+					print("finished")
 					break
 
 			if len(buffer) < params['replay_initial']:

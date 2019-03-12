@@ -201,4 +201,23 @@ def calc_loss_rainbow(batch, batch_weights, net, tgt_net, gamma, device="cpu", v
     return loss_v.mean(), loss_v + 1e-5
 
 
+def calc_qvals(rewards, gamma = 0.99):
+    """
+    calculate the q_values for the reinforce algorithm
+
+    Args:
+        rewards: saved rewards from the previous episode
+
+    Returns:
+        list of the sum of discounted rewards from the previous episode
+    """
+    res = []
+    sum_r = 0.0
+    for r in reversed(rewards):
+        sum_r *= gamma
+        sum_r += r
+        res.append(sum_r)
+    return list(reversed(res))
+
+
 
