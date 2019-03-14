@@ -38,7 +38,7 @@ if __name__ == "__main__":
 	writer = SummaryWriter(comment="-" + params['run_name'] + "-reinforce")
 
 	# NETWORK
-	net = dqn_mlp_net.Network(observation_space, action_space).to(device)
+	net = dqn_mlp_net.Network(observation_space, action_space, hidden_layer_size=64).to(device)
 
 	# AGENT
 	agent = agents.PolicyGradientAgent(net, preprocessor=utils.float32_preprocessor, apply_softmax=True)
