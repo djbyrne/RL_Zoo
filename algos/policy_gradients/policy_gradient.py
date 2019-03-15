@@ -97,22 +97,15 @@ if __name__ == "__main__":
 			loss_policy_v = -log_prob_actions_v.mean()
 
 			# # calculate entropy
-			prob_v = F.softmax(logits_v, dim=1)
-			entropy_v = -(prob_v * log_prob_v).sum(dim=1).mean()
-			entropy_loss_v = -ENTROPY_BETA * entropy_v
-			loss_v = loss_policy_v + entropy_loss_v
-			# entropy_loss, prob_v = calculate_entropy(logits_v, log_prob_v)
-			# loss_v = loss_policy_v + entropy_loss
+			entropy_loss, prob_v = calculate_entropy(logits_v, log_prob_v, beta=0.01)
+			loss_v = loss_policy_v + entropy_loss
 
 			loss_v.backward()
 			optimizer.step()
 
 			# calc KL-div
-			new_logits_v = net(states_v)
-			new_prob_v = F.softmax(new_logits_v, dim=1)
-			kl_div_v = -((new_prob_v / prob_v).log() * prob_v).sum(dim=1).mean()
-			# kl_div_v = calculate_kl_divergence(net(states_v), prob_v)
-			# writer.add_scalar("kl", kl_div_v.item(), step_idx)
+			kl_div_v = calculate_kl_divergence(net(states_v), prob_v)
+			writer.add_scalar("kl", kl_div_v.item(), step_idx)
 
 			# calculate the stats
 			grad_max = 0.0
