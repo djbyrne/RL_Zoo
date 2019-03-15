@@ -69,7 +69,8 @@ To set up your python environment to run the code in this repository, follow the
 - [X] Distributional DQN (C51)
 - [X] Noisy DQN
 - [X] Rainbow
-- [ ] REINFORCE
+- [X] REINFORCE
+- [X] Vanilla Policy Gradient
 - [ ] A2C
 - [ ] A3C
 - [ ] PPO
