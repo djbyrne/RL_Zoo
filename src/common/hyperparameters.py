@@ -105,4 +105,23 @@ PARAMS = {
         'gamma': 0.99,
         'batch_size': 32
     },
+    'pong_a2c': {
+        'env_name':         "PongNoFrameskip-v4",
+        'env_type':         'atari',
+        'stop_reward':      18.0,
+        'run_name':         'pong',
+        'replay_size':      100000,
+        'replay_initial':   10000,
+        'target_net_sync':  1000,
+        'epsilon_frames':   10**5,
+        'epsilon_start':    1.0,
+        'epsilon_final':    0.02,
+        'learning_rate':    0.0001,
+        'beta':             0.01,
+        'num_envs':         50,
+        'step_count':       4,
+        'clip_grad':        0.1,
+        'gamma':            0.99,
+        'batch_size':       128
+    },
 }

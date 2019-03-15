@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys, os
-sys.path.append(os.path.abspath(os.path.join('..', 'src')))
+sys.path.append(os.path.abspath(os.path.join('../../', 'src')))
 
 import gym
 import argparse
@@ -9,6 +9,7 @@ import torch
 import torch.optim as optim
 
 from tensorboardX import SummaryWriter
+from wrapper import build_env_wrapper
 
 import actions, agents, runner, common, wrapper, runner
 from networks import dqn_noisy_net

@@ -310,9 +310,18 @@ def build_env_wrapper(env_name, env_type='basic'):
         env = wrap_dqn_atari(env)
         return env, env.observation_space.shape, env.action_space.n
     elif env_type == 'unity':
-        # return UnityEnv(ENV_PATH+env_name, worker_id=0, use_visual=True)
         env = UnityWrapper(ENV_PATH+env_name)
         return env, env.observation_space.shape, env.action_space_size 
+
+
+def build_multi_env(env_name, env_type='basic', num_envs=4):
+    """
+    builds multi environment
+    """
+
+    make_env = lambda: build_env_wrapper(env_name, env_type)
+    envs, observation_space, action_space_size = [make_env() for _ in range(num_envs)]
+    return envs, observation_space[0], action_space_size[0]
         
 
 def wrap_dqn_atari(env, cnn=True, stack_frames=4, episodic_life=True, reward_clipping=True):
