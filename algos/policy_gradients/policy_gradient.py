@@ -16,6 +16,7 @@ import runner
 from wrapper import build_env_wrapper
 import wrapper
 import loss
+from pg_common import calculate_entropy, calculate_kl_divergence
 from networks import dqn_cnn_net, dqn_mlp_net
 from common import hyperparameters, logger, utils
 from memory import ExperienceReplayBuffer
@@ -31,9 +32,9 @@ if __name__ == "__main__":
 
 	EPISODES_TO_TRAIN = 4
 	GAMMA = 0.99
-	LEARNING_RATE = 0.001
+	LEARNING_RATE = 0.01
 	ENTROPY_BETA = 0.01
-	BATCH_SIZE = 8
+	BATCH_SIZE = 64
 
 	REWARD_STEPS = 10
 
@@ -44,13 +45,13 @@ if __name__ == "__main__":
 	writer = SummaryWriter(comment="-" + params['run_name'] + "-vpg")
 
 	# NETWORK
-	net = dqn_mlp_net.Network(observation_space, action_space, hidden_layer_size=64).to(device)
+	net = dqn_mlp_net.Network(observation_space, action_space, hidden_layer_size=32).to(device)
 
 	# AGENT
 	agent = agents.PolicyGradientAgent(net, preprocessor=utils.float32_preprocessor, apply_softmax=True)
 
 	# RUNNER
-	exp_source = runner.RunnerSourceFirstLast(env, agent, gamma=params['gamma'], steps_count=REWARD_STEPS)
+	exp_source = runner.RunnerSourceFirstLast(env, agent, gamma=params['gamma'], steps_count=params['step_count'])
 	optimizer = optim.Adam(net.parameters(), lr=params['learning_rate'])
 
 	total_rewards = []
@@ -81,23 +82,27 @@ if __name__ == "__main__":
 				if reward_tracker.reward(new_rewards[0], step_idx):
 					break
 
-			if len(batch_states) < BATCH_SIZE:
+			if len(batch_states) < params['batch_size']:
 				continue
 
 			states_v = torch.FloatTensor(batch_states)
 			batch_actions_t = torch.LongTensor(batch_actions)
 			batch_scale_v = torch.FloatTensor(batch_scales)
 
+			# calculate loss
 			optimizer.zero_grad()
 			logits_v = net(states_v)
 			log_prob_v = F.log_softmax(logits_v, dim=1)
-			log_prob_actions_v = batch_scale_v * log_prob_v[range(BATCH_SIZE), batch_actions_t]
+			log_prob_actions_v = batch_scale_v * log_prob_v[range(params['batch_size']), batch_actions_t]
 			loss_policy_v = -log_prob_actions_v.mean()
 
+			# # calculate entropy
 			prob_v = F.softmax(logits_v, dim=1)
 			entropy_v = -(prob_v * log_prob_v).sum(dim=1).mean()
 			entropy_loss_v = -ENTROPY_BETA * entropy_v
 			loss_v = loss_policy_v + entropy_loss_v
+			# entropy_loss, prob_v = calculate_entropy(logits_v, log_prob_v)
+			# loss_v = loss_policy_v + entropy_loss
 
 			loss_v.backward()
 			optimizer.step()
@@ -106,8 +111,10 @@ if __name__ == "__main__":
 			new_logits_v = net(states_v)
 			new_prob_v = F.softmax(new_logits_v, dim=1)
 			kl_div_v = -((new_prob_v / prob_v).log() * prob_v).sum(dim=1).mean()
-			writer.add_scalar("kl", kl_div_v.item(), step_idx)
+			# kl_div_v = calculate_kl_divergence(net(states_v), prob_v)
+			# writer.add_scalar("kl", kl_div_v.item(), step_idx)
 
+			# calculate the stats
 			grad_max = 0.0
 			grad_means = 0.0
 			grad_count = 0

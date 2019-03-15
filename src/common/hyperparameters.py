@@ -25,9 +25,10 @@ PARAMS = {
         'epsilon_frames':   10**4,
         'epsilon_start':    1.0,
         'epsilon_final':    0.1,
-        'learning_rate':    0.001,
+        'learning_rate':    0.01,
         'gamma':            1.0,
-        'batch_size':       512
+        'batch_size':       64,
+        'step_count':       10
     },
     'lunarlander': {
         'env_name':         "LunarLander-v2",

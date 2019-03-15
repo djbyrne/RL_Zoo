@@ -220,4 +220,3 @@ def calc_qvals(rewards, gamma = 0.99):
     return list(reversed(res))
 
 
-
