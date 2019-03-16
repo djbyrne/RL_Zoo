@@ -108,6 +108,7 @@ PARAMS = {
     'pong_a2c': {
         'env_name':         "PongNoFrameskip-v4",
         'env_type':         'atari',
+        'num_env':          1,
         'stop_reward':      18.0,
         'run_name':         'pong',
         'replay_size':      100000,

@@ -16,7 +16,7 @@ class EnvWrapper:
         self.env_name = env_name
         self.env = gym.make(self.env_name)
         self.observation_space = self.env.observation_space 
-        self.action_space = self.env.action_space           
+        self.action_space = self.env.action_space    
                 
     def reset(self):
         state = self.env.reset()
@@ -304,11 +304,11 @@ def build_env_wrapper(env_name, env_type='basic'):
     """
     if env_type == 'basic':
         env = gym.make(env_name)
-        return env, env.observation_space.shape, env.action_space.n
+        return env
     elif env_type == 'atari':
         env = gym.make(env_name)
         env = wrap_dqn_atari(env)
-        return env, env.observation_space.shape, env.action_space.n
+        return env
     elif env_type == 'unity':
         env = UnityWrapper(ENV_PATH+env_name)
         return env, env.observation_space.shape, env.action_space_size 
@@ -320,8 +320,8 @@ def build_multi_env(env_name, env_type='basic', num_envs=4):
     """
 
     make_env = lambda: build_env_wrapper(env_name, env_type)
-    envs, observation_space, action_space_size = [make_env() for _ in range(num_envs)]
-    return envs, observation_space[0], action_space_size[0]
+    envs = [make_env() for _ in range(num_envs)]
+    return envs, envs[0].observation_space.shape, envs[0].action_space.n
         
 
 def wrap_dqn_atari(env, cnn=True, stack_frames=4, episodic_life=True, reward_clipping=True):
