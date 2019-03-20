@@ -10,6 +10,7 @@ import numpy as np
 
 from common import utils
 from networks import ops
+from ac_common import unpack_batch
 
 
 def calc_loss_dqn(batch, net, tgt_net, gamma=0.99, device="cpu", double=True):
@@ -248,3 +249,35 @@ def calc_qvals(rewards, gamma=0.99):
         sum_r += r
         res.append(sum_r)
     return list(reversed(res))
+
+
+def calc_a2c_loss(batch, net, params, device="cpu"):
+    """
+    Calculate the loss of the network given the batch data
+
+    Args:
+        batch: batch of stored experiences/environment transitions
+        net: neural network
+
+    Returns:
+        policy_loss: the loss calculated for the policy/actor
+        value_loss: the loss calculated for the value/critic
+    """
+
+    states_v, actions_t, vals_ref_v = unpack_batch(batch, net, device=device)
+
+    logits_v, value_v = net(states_v)
+    loss_value_v = F.mse_loss(value_v.squeeze(-1), vals_ref_v)
+
+    log_prob_v = F.log_softmax(logits_v, dim=1)
+    adv_v = vals_ref_v - value_v.detach()
+    log_prob_actions_v = adv_v * log_prob_v[range(params["batch_size"]), actions_t]
+
+    loss_policy_v = -log_prob_actions_v.mean()
+
+    prob_v = F.softmax(logits_v, dim=1)
+    entropy_loss_v = params["beta"] * (prob_v * log_prob_v).sum(dim=1).mean()
+
+    loss_v = entropy_loss_v + loss_value_v
+
+    return loss_policy_v, loss_v
