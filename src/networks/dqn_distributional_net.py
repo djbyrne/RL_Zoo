@@ -6,6 +6,7 @@ import torch.nn.functional as F
 import numpy as np
 from .ops import NoisyLinear, get_conv_out
 
+
 class Network(nn.Module):
     """
     implementation of a DQN conv network with a categorical distribution at the head of the network instead of the
@@ -26,7 +27,7 @@ class Network(nn.Module):
             nn.Conv2d(32, 64, kernel_size=4, stride=2),
             nn.ReLU(),
             nn.Conv2d(64, 64, kernel_size=3, stride=1),
-            nn.ReLU()
+            nn.ReLU(),
         )
 
         conv_out_size = get_conv_out(input_shape, self.conv)
@@ -34,10 +35,12 @@ class Network(nn.Module):
         self.fc = nn.Sequential(
             nn.Linear(conv_out_size, 512),
             nn.ReLU(),
-            nn.Linear(512, n_actions * self.n_atoms)
+            nn.Linear(512, n_actions * self.n_atoms),
         )
 
-        self.register_buffer("supports", torch.arange(self.Vmin,self.Vmax + self.delta_z, self.delta_z))
+        self.register_buffer(
+            "supports", torch.arange(self.Vmin, self.Vmax + self.delta_z, self.delta_z)
+        )
         self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
@@ -45,7 +48,7 @@ class Network(nn.Module):
         fx = x.float() / 256
         conv_out = self.conv(fx).view(batch_size, -1)
         fc_out = self.fc(conv_out)
-        return fc_out.view(batch_size, -1 , self.n_atoms)
+        return fc_out.view(batch_size, -1, self.n_atoms)
 
     def both(self, x):
         category_output = self(x)

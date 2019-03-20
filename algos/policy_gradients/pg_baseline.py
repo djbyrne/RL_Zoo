@@ -22,9 +22,7 @@ class PGN(nn.Module):
         super(PGN, self).__init__()
 
         self.net = nn.Sequential(
-            nn.Linear(input_size, 128),
-            nn.ReLU(),
-            nn.Linear(128, n_actions)
+            nn.Linear(input_size, 128), nn.ReLU(), nn.Linear(128, n_actions)
         )
 
     def forward(self, x):
@@ -38,9 +36,12 @@ if __name__ == "__main__":
     net = PGN(env.observation_space.shape[0], env.action_space.n)
     print(net)
 
-    agent = ptan.agent.PolicyAgent(net, preprocessor=ptan.agent.float32_preprocessor,
-                                   apply_softmax=True)
-    exp_source = ptan.experience.ExperienceSourceFirstLast(env, agent, gamma=GAMMA, steps_count=REWARD_STEPS)
+    agent = ptan.agent.PolicyAgent(
+        net, preprocessor=ptan.agent.float32_preprocessor, apply_softmax=True
+    )
+    exp_source = ptan.experience.ExperienceSourceFirstLast(
+        env, agent, gamma=GAMMA, steps_count=REWARD_STEPS
+    )
 
     optimizer = optim.Adam(net.parameters(), lr=LEARNING_RATE)
 
@@ -67,8 +68,10 @@ if __name__ == "__main__":
             reward = new_rewards[0]
             total_rewards.append(reward)
             mean_rewards = float(np.mean(total_rewards[-100:]))
-            print("%d: reward: %6.2f, mean_100: %6.2f, episodes: %d" % (
-                step_idx, reward, mean_rewards, done_episodes))
+            print(
+                "%d: reward: %6.2f, mean_100: %6.2f, episodes: %d"
+                % (step_idx, reward, mean_rewards, done_episodes)
+            )
             writer.add_scalar("reward", reward, step_idx)
             writer.add_scalar("reward_100", mean_rewards, step_idx)
             writer.add_scalar("episodes", done_episodes, step_idx)
@@ -86,7 +89,9 @@ if __name__ == "__main__":
         optimizer.zero_grad()
         logits_v = net(states_v)
         log_prob_v = F.log_softmax(logits_v, dim=1)
-        log_prob_actions_v = batch_scale_v * log_prob_v[range(BATCH_SIZE), batch_actions_t]
+        log_prob_actions_v = (
+            batch_scale_v * log_prob_v[range(BATCH_SIZE), batch_actions_t]
+        )
         loss_policy_v = -log_prob_actions_v.mean()
 
         prob_v = F.softmax(logits_v, dim=1)

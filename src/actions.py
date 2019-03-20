@@ -5,6 +5,7 @@ class ActionSelector:
     """
     Abstract class which converts scores to the actions
     """
+
     def __call__(self, scores):
         raise NotImplementedError
 
@@ -13,6 +14,7 @@ class ArgmaxActionSelector(ActionSelector):
     """
     Selects actions using argmax
     """
+
     def __call__(self, scores):
         assert isinstance(scores, np.ndarray)
         return np.argmax(scores, axis=1)
@@ -22,6 +24,7 @@ class EpsilonGreedyActionSelector(ActionSelector):
     """
     Selects action based on the epsilon greedy policy
     """
+
     def __init__(self, epsilon=0.5, selector=ArgmaxActionSelector()):
         self.epsilon = epsilon
         self.selector = selector
@@ -40,6 +43,7 @@ class ProbabilityActionSelector(ActionSelector):
     """
     Converts probabilities of actions into action by sampling them
     """
+
     def __call__(self, probs):
         assert isinstance(probs, np.ndarray)
         actions = []

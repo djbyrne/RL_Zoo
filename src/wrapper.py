@@ -10,35 +10,35 @@ from unityagents import UnityEnvironment
 ENV_PATH = "/Users/donalbyrne/Workspace/RL_Zoo/src/environments/"
 
 
-
 class EnvWrapper:
     def __init__(self, env_name):
         self.env_name = env_name
         self.env = gym.make(self.env_name)
-        self.observation_space = self.env.observation_space 
-        self.action_space = self.env.action_space    
-                
+        self.observation_space = self.env.observation_space
+        self.action_space = self.env.action_space
+
     def reset(self):
         state = self.env.reset()
         return state
-        
+
     def get_random_action(self):
-        action = self.env.action_space.sample()   
+        action = self.env.action_space.sample()
         return action
-        
-    def step(self, action):        
-        next_state, reward, terminal, _ = self.env.step(action)        
+
+    def step(self, action):
+        next_state, reward, terminal, _ = self.env.step(action)
         return next_state, reward, terminal
-    
+
     def set_random_seed(self, seed):
         self.env.seed(seed)
-        
+
     def render(self):
-        frame = self.env.render(mode='rgb_array')
+        frame = self.env.render(mode="rgb_array")
         return frame
-        
+
     def close(self):
         self.env.close()
+
 
 class UnityWrapper:
     """
@@ -59,13 +59,13 @@ class UnityWrapper:
         return self.env_info.vector_observations[0]
 
     def get_random_action(self):
-        action = random.randint(0,self.action_space)
+        action = random.randint(0, self.action_space)
         return action
 
     def step(self, action):
-        self.env_info = self.env.step(action)[self.brain_name]   
+        self.env_info = self.env.step(action)[self.brain_name]
         next_state = self.env_info.vector_observations[0]
-        reward = self.env_info.rewards[0]                   
+        reward = self.env_info.rewards[0]
         done = self.env_info.local_done[0]
 
         return next_state, reward, done, None
@@ -75,7 +75,6 @@ class UnityWrapper:
 
 
 class NoopResetEnv(gym.Wrapper):
-
     def __init__(self, env=None, noop_max=30):
         """Sample initial states by taking random number of no-ops on reset.
         No-op is assumed to be action 0.
@@ -83,35 +82,36 @@ class NoopResetEnv(gym.Wrapper):
         super(NoopResetEnv, self).__init__(env)
         self.noop_max = noop_max
         self.override_num_noops = None
-        assert env.unwrapped.get_action_meanings()[0] == 'NOOP'
+        assert env.unwrapped.get_action_meanings()[0] == "NOOP"
 
     def step(self, action):
         return self.env.step(action)
 
     def reset(self):
-    	""" Do no-op action for a number of steps in [1, noop_max]."""
-    	self.env.reset()
-    	if self.override_num_noops is not None:
-    		noops = self.override_num_noops
-    	else:
-    		noops = np.random.randint(1,self.noop_max + 1)
+        """ Do no-op action for a number of steps in [1, noop_max]."""
+        self.env.reset()
+        if self.override_num_noops is not None:
+            noops = self.override_num_noops
+        else:
+            noops = np.random.randint(1, self.noop_max + 1)
 
-    	assert noops > 0
+        assert noops > 0
 
-    	obs = None
+        obs = None
 
-    	for _ in range(noops):
-    		obs, _, done, _ = self.env.step(0)
-    		if done:
-    			obs = self.env.reset()
+        for _ in range(noops):
+            obs, _, done, _ = self.env.step(0)
+            if done:
+                obs = self.env.reset()
 
-    	return obs
+        return obs
+
 
 class FireResetEnv(gym.Wrapper):
     def __init__(self, env=None):
         """For environments where the user need to press FIRE for the game to start."""
         super(FireResetEnv, self).__init__(env)
-        assert env.unwrapped.get_action_meanings()[1] == 'FIRE'
+        assert env.unwrapped.get_action_meanings()[1] == "FIRE"
         assert len(env.unwrapped.get_action_meanings()) >= 3
 
     def step(self, action):
@@ -126,6 +126,7 @@ class FireResetEnv(gym.Wrapper):
         if done:
             self.env.reset()
         return obs
+
 
 class EpisodicLifeEnv(gym.Wrapper):
     def __init__(self, env=None):
@@ -166,6 +167,7 @@ class EpisodicLifeEnv(gym.Wrapper):
         self.lives = self.env.unwrapped.ale.lives()
         return obs
 
+
 class MaxAndSkipEnv(gym.Wrapper):
     def __init__(self, env=None, skip=4):
         """Return only every `skip`-th frame"""
@@ -195,10 +197,13 @@ class MaxAndSkipEnv(gym.Wrapper):
         self._obs_buffer.append(obs)
         return obs
 
+
 class ProcessFrame84(gym.ObservationWrapper):
     def __init__(self, env=None):
         super(ProcessFrame84, self).__init__(env)
-        self.observation_space = spaces.Box(low=0, high=255, shape=(84, 84, 1), dtype=np.uint8)
+        self.observation_space = spaces.Box(
+            low=0, high=255, shape=(84, 84, 1), dtype=np.uint8
+        )
 
     def observation(self, obs):
         return ProcessFrame84.process(obs)
@@ -216,6 +221,7 @@ class ProcessFrame84(gym.ObservationWrapper):
         x_t = resized_screen[18:102, :]
         x_t = np.reshape(x_t, [84, 84, 1])
         return x_t.astype(np.uint8)
+
 
 class ClippedRewardsWrapper(gym.RewardWrapper):
     def reward(self, reward):
@@ -238,6 +244,7 @@ class LazyFrames(object):
             out = out.astype(dtype)
         return out
 
+
 class FrameStack(gym.Wrapper):
     def __init__(self, env, k):
         """Stack k last frames.
@@ -250,7 +257,9 @@ class FrameStack(gym.Wrapper):
         self.k = k
         self.frames = deque([], maxlen=k)
         shp = env.observation_space.shape
-        self.observation_space = spaces.Box(low=0, high=255, shape=(shp[0]*k, shp[1], shp[2]), dtype=np.float32)
+        self.observation_space = spaces.Box(
+            low=0, high=255, shape=(shp[0] * k, shp[1], shp[2]), dtype=np.float32
+        )
 
     def reset(self):
         ob = self.env.reset()
@@ -267,27 +276,34 @@ class FrameStack(gym.Wrapper):
         assert len(self.frames) == self.k
         return LazyFrames(list(self.frames))
 
+
 class ScaledFloatFrame(gym.ObservationWrapper):
     def observation(self, obs):
         # careful! This undoes the memory optimization, use
         # with smaller replay buffers only.
         return np.array(obs).astype(np.float32) / 255.0
 
+
 class ImageToPyTorch(gym.ObservationWrapper):
     """
     Change image shape to CWH
     """
+
     def __init__(self, env):
         super(ImageToPyTorch, self).__init__(env)
         old_shape = self.observation_space.shape
-        self.observation_space = gym.spaces.Box(low=0.0, high=1.0, shape=(old_shape[-1], old_shape[0], old_shape[1]),
-                                                dtype=np.float32)
+        self.observation_space = gym.spaces.Box(
+            low=0.0,
+            high=1.0,
+            shape=(old_shape[-1], old_shape[0], old_shape[1]),
+            dtype=np.float32,
+        )
 
     def observation(self, observation):
         return np.swapaxes(observation, 2, 0)
 
 
-def build_env_wrapper(env_name, env_type='basic'):
+def build_env_wrapper(env_name, env_type="basic"):
     """
     takes in environment name and builds the environment wrapper accordingly
 
@@ -302,29 +318,33 @@ def build_env_wrapper(env_name, env_type='basic'):
     Returns:
         environment object with appropriate wrapping
     """
-    if env_type == 'basic':
+    if env_type == "basic":
         env = gym.make(env_name)
-        return env
-    elif env_type == 'atari':
+        return [env, env.observation_space.shape, env.action_space.n]
+    elif env_type == "atari":
         env = gym.make(env_name)
         env = wrap_dqn_atari(env)
-        return env
-    elif env_type == 'unity':
-        env = UnityWrapper(ENV_PATH+env_name)
-        return env, env.observation_space.shape, env.action_space_size 
+        return [env, env.observation_space.shape, env.action_space.n]
+    elif env_type == "unity":
+        env = UnityWrapper(ENV_PATH + env_name)
+        return [env, env.observation_space.shape, env.action_space_size]
 
 
-def build_multi_env(env_name, env_type='basic', num_envs=4):
+def build_multi_env(env_name, env_type="basic", num_envs=4):
     """
     builds multi environment
     """
 
     make_env = lambda: build_env_wrapper(env_name, env_type)
-    envs = [make_env() for _ in range(num_envs)]
-    return envs, envs[0].observation_space.shape, envs[0].action_space.n
-        
+    output = [make_env() for _ in range(num_envs)]
+    envs = [item[0] for item in output]
 
-def wrap_dqn_atari(env, cnn=True, stack_frames=4, episodic_life=True, reward_clipping=True):
+    return envs, envs[0].observation_space.shape, envs[0].action_space.n
+
+
+def wrap_dqn_atari(
+    env, cnn=True, stack_frames=4, episodic_life=True, reward_clipping=True
+):
     """Apply a common set of wrappers for Atari games that require vision.
 
     Args:
@@ -337,12 +357,12 @@ def wrap_dqn_atari(env, cnn=True, stack_frames=4, episodic_life=True, reward_cli
         environment with selected wrappers applied
 
     """
-    assert 'NoFrameskip' in env.spec.id
+    assert "NoFrameskip" in env.spec.id
     if episodic_life:
         env = EpisodicLifeEnv(env)
-    #env = NoopResetEnv(env, noop_max=30)
+    # env = NoopResetEnv(env, noop_max=30)
     env = MaxAndSkipEnv(env, skip=4)
-    if 'FIRE' in env.unwrapped.get_action_meanings():
+    if "FIRE" in env.unwrapped.get_action_meanings():
         env = FireResetEnv(env)
     if cnn:
         env = ProcessFrame84(env)
@@ -351,4 +371,3 @@ def wrap_dqn_atari(env, cnn=True, stack_frames=4, episodic_life=True, reward_cli
     if reward_clipping:
         env = ClippedRewardsWrapper(env)
     return env
-

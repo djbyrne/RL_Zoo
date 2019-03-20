@@ -11,6 +11,7 @@ class Network(nn.Module):
     """
     Standard MLP for the dqn network
     """
+
     def __init__(self, input_shape, n_actions, hidden_layer_size=16):
         """init method generate sequential model
 
@@ -25,7 +26,6 @@ class Network(nn.Module):
 
         self.fc1 = nn.Linear(input_shape[0], hidden_layer_size)
         self.fc2 = nn.Linear(hidden_layer_size, n_actions)
-
 
     def forward(self, x):
         x = x.float()

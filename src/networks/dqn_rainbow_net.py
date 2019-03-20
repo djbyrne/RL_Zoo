@@ -6,6 +6,7 @@ import torch.nn.functional as F
 import numpy as np
 from .ops import NoisyLinear, get_conv_out
 
+
 class Network(nn.Module):
     """
     implementation of a rainbow dqn network combing dueling network heads for value and advantage,
@@ -27,24 +28,24 @@ class Network(nn.Module):
             nn.Conv2d(32, 64, kernel_size=4, stride=2),
             nn.ReLU(),
             nn.Conv2d(64, 64, kernel_size=3, stride=1),
-            nn.ReLU()
+            nn.ReLU(),
         )
 
         conv_out_size = get_conv_out(input_shape, self.conv)
 
         self.fc_val = nn.Sequential(
-            NoisyLinear(conv_out_size, 512),
-            nn.ReLU(),
-            NoisyLinear(512, self.n_atoms)
+            NoisyLinear(conv_out_size, 512), nn.ReLU(), NoisyLinear(512, self.n_atoms)
         )
 
         self.fc_adv = nn.Sequential(
             NoisyLinear(conv_out_size, 512),
             nn.ReLU(),
-            NoisyLinear(512, self.n_actions * self.n_atoms)
+            NoisyLinear(512, self.n_actions * self.n_atoms),
         )
 
-        self.register_buffer("supports", torch.arange(self.Vmin,self.Vmax + self.delta_z, self.delta_z))
+        self.register_buffer(
+            "supports", torch.arange(self.Vmin, self.Vmax + self.delta_z, self.delta_z)
+        )
         self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):

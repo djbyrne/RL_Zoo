@@ -110,4 +110,6 @@ To set up your python environment to run the code in this repository, follow the
 
  This library is based off the examples used in the book "Deep Reinforcement Learning Hands-On" by Max Lapan although I have re-written most of the architecture and algorithms in a way that makes sense to me. Lapans book is by far one of the best titles on the subject of RL and I would highly recommend it.
    
+ Max Lapan: https://github.com/Shmuma/ptan
+ Shangtong Zhang: https://github.com/ShangtongZhang/DeepRL
 
