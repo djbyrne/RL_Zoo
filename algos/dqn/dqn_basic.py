@@ -55,7 +55,7 @@ if __name__ == "__main__":
 	with logger.RewardTracker(writer, params['stop_reward']) as reward_tracker:
 		while True:
 			frame_idx += 1
-			buffer.populate(1)
+			batch = buffer.sample(params['batch_size'])		
 			epsilon_tracker.frame(frame_idx)
 
 			new_rewards = exp_source.pop_total_rewards()
