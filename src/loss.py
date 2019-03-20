@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join('..', 'src')))
+
+sys.path.append(os.path.abspath(os.path.join("..", "src")))
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -43,7 +44,11 @@ def calc_loss_dqn(batch, net, tgt_net, gamma=0.99, device="cpu", double=True):
         # calculate the next action to take using main network
         next_state_actions = net(next_states_v).max(1)[1]
         # calculate the values of this action using the target network
-        next_state_values = tgt_net(next_states_v).gather(1, next_state_actions.unsqueeze(-1)).squeeze(-1)
+        next_state_values = (
+            tgt_net(next_states_v)
+            .gather(1, next_state_actions.unsqueeze(-1))
+            .squeeze(-1)
+        )
     else:
         next_state_values = tgt_net(next_states_v).max(1)[0]
     next_state_values[done_mask] = 0.0
@@ -54,7 +59,9 @@ def calc_loss_dqn(batch, net, tgt_net, gamma=0.99, device="cpu", double=True):
     return nn.MSELoss()(state_action_values, expected_state_action_values)
 
 
-def calc_weighted_loss_dqn(batch, batch_weights, net, tgt_net, gamma=0.99, device="cpu", double=True):
+def calc_weighted_loss_dqn(
+    batch, batch_weights, net, tgt_net, gamma=0.99, device="cpu", double=True
+):
     """
     Calculate the mean squared error (MSE) of the sampled batch for weighted experiences such as when
     using Prioritized Experience Replay (PER)
@@ -89,7 +96,11 @@ def calc_weighted_loss_dqn(batch, batch_weights, net, tgt_net, gamma=0.99, devic
         # calculate the next action to take using main network
         next_state_actions = net(next_states_v).max(1)[1]
         # calculate the values of this action using the target network
-        next_state_values = tgt_net(next_states_v).gather(1, next_state_actions.unsqueeze(-1)).squeeze(-1)
+        next_state_values = (
+            tgt_net(next_states_v)
+            .gather(1, next_state_actions.unsqueeze(-1))
+            .squeeze(-1)
+        )
     else:
         next_state_values = tgt_net(next_states_v).max(1)[0]
     next_state_values[done_mask] = 0.0
@@ -98,11 +109,15 @@ def calc_weighted_loss_dqn(batch, batch_weights, net, tgt_net, gamma=0.99, devic
     expected_state_action_values = next_state_values.detach() * gamma + rewards_v
 
     # explicitly calculate MSE. allows us to maintain the individual sample loss
-    losses_v = batch_weights_v * (state_action_values - expected_state_action_values) ** 2
+    losses_v = (
+        batch_weights_v * (state_action_values - expected_state_action_values) ** 2
+    )
     return losses_v.mean(), losses_v + 1e-5
 
 
-def calc_loss_distributional(batch, net, tgt_net, gamma=0.99, device="cpu", v_min=-10, v_max=10, n_atoms=51):
+def calc_loss_distributional(
+    batch, net, tgt_net, gamma=0.99, device="cpu", v_min=-10, v_max=10, n_atoms=51
+):
     """
     Calculate the mean squared error (MSE) of the sampled batch for the distributional Q network
 
@@ -138,7 +153,9 @@ def calc_loss_distributional(batch, net, tgt_net, gamma=0.99, device="cpu", v_mi
     dones = dones.astype(np.bool)
 
     # project distribution
-    projected_distribution = ops.distributional_projection(next_best_distr, rewards, dones, v_min, v_max, n_atoms, gamma)
+    projected_distribution = ops.distributional_projection(
+        next_best_distr, rewards, dones, v_min, v_max, n_atoms, gamma
+    )
 
     # calculate network output
     distr_v = net(states_v)
@@ -150,7 +167,18 @@ def calc_loss_distributional(batch, net, tgt_net, gamma=0.99, device="cpu", v_mi
 
     return loss_v.sum(dim=1).mean()
 
-def calc_loss_rainbow(batch, batch_weights, net, tgt_net, gamma, device="cpu", v_min=-10, v_max=10, n_atoms=51):
+
+def calc_loss_rainbow(
+    batch,
+    batch_weights,
+    net,
+    tgt_net,
+    gamma,
+    device="cpu",
+    v_min=-10,
+    v_max=10,
+    n_atoms=51,
+):
     """
     Calculate the mean squared error (MSE) of the sampled batch for the rainbow algorithm using double learning,
     distributional q values and weighted q values.
@@ -189,7 +217,9 @@ def calc_loss_rainbow(batch, batch_weights, net, tgt_net, gamma, device="cpu", v
     next_best_distr = next_best_distr_v.data.cpu().numpy()
 
     dones = dones.astype(np.bool)
-    projected_distribution = ops.distributional_projection(next_best_distr, rewards, dones, v_min, v_max, n_atoms, gamma)
+    projected_distribution = ops.distributional_projection(
+        next_best_distr, rewards, dones, v_min, v_max, n_atoms, gamma
+    )
 
     # calculate net output
     state_action_values = distr_v[range(batch_size), actions_v.data]
@@ -201,7 +231,7 @@ def calc_loss_rainbow(batch, batch_weights, net, tgt_net, gamma, device="cpu", v
     return loss_v.mean(), loss_v + 1e-5
 
 
-def calc_qvals(rewards, gamma = 0.99):
+def calc_qvals(rewards, gamma=0.99):
     """
     calculate the q_values for the reinforce algorithm
 
@@ -218,5 +248,3 @@ def calc_qvals(rewards, gamma = 0.99):
         sum_r += r
         res.append(sum_r)
     return list(reversed(res))
-
-

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join('../../', 'src')))
+
+sys.path.append(os.path.abspath(os.path.join("../../", "src")))
 import gym
 import numpy as np
 import argparse
@@ -14,7 +15,8 @@ import torch.nn.functional as F
 import torch.optim as optim
 from common import hyperparameters
 
-def unpack_batch(batch, net, device='cpu'):
+
+def unpack_batch(batch, net, device="cpu"):
     """
 	Takes in a batch of environment transitions 
 
@@ -26,7 +28,7 @@ def unpack_batch(batch, net, device='cpu'):
 		states variable, actions tensor, Q values
 	"""
 
-    params = hyperparameters.PARAMS['pong_a2c']
+    params = hyperparameters.PARAMS["pong_a2c"]
     states = []
     actions = []
     rewards = []
@@ -51,8 +53,9 @@ def unpack_batch(batch, net, device='cpu'):
         last_states_v = torch.FloatTensor(last_states).to(device)
         last_vals_v = net(last_states_v)[1]
         last_vals_np = last_vals_v.data.cpu().numpy()[:, 0]
-        rewards_np[not_done_idx] += params['gamma'] ** params['step_count'] * last_vals_np
+        rewards_np[not_done_idx] += (
+            params["gamma"] ** params["step_count"] * last_vals_np
+        )
 
     ref_vals_v = torch.FloatTensor(rewards_np).to(device)
     return states_v, actions_t, ref_vals_v
-

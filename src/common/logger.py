@@ -4,6 +4,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+
 class RewardTracker:
     def __init__(self, writer, stop_reward):
         self.writer = writer
@@ -28,9 +29,10 @@ class RewardTracker:
         self.ts = time.time()
         mean_reward = np.mean(self.total_rewards[-100:])
         epsilon_str = "" if epsilon is None else ", eps %.2f" % epsilon
-        print("%d: done %d games, mean reward %.3f, speed %.2f f/s%s" % (
-            frame, len(self.total_rewards), mean_reward, speed, epsilon_str
-        ))
+        print(
+            "%d: done %d games, mean reward %.3f, speed %.2f f/s%s"
+            % (frame, len(self.total_rewards), mean_reward, speed, epsilon_str)
+        )
         sys.stdout.flush()
         if epsilon is not None:
             self.writer.add_scalar("epsilon", epsilon, frame)
@@ -46,11 +48,12 @@ class RewardTracker:
 class EpsilonTracker:
     def __init__(self, epsilon_greedy_selector, params):
         self.epsilon_greedy_selector = epsilon_greedy_selector
-        self.epsilon_start = params['epsilon_start']
-        self.epsilon_final = params['epsilon_final']
-        self.epsilon_frames = params['epsilon_frames']
+        self.epsilon_start = params["epsilon_start"]
+        self.epsilon_final = params["epsilon_final"]
+        self.epsilon_frames = params["epsilon_frames"]
         self.frame(0)
 
     def frame(self, frame):
-        self.epsilon_greedy_selector.epsilon = \
-            max(self.epsilon_final, self.epsilon_start - frame / self.epsilon_frames)
+        self.epsilon_greedy_selector.epsilon = max(
+            self.epsilon_final, self.epsilon_start - frame / self.epsilon_frames
+        )

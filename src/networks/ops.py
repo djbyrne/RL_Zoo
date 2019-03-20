@@ -17,11 +17,14 @@ class NoisyLinear(nn.Linear):
     normal distribution are added to each weight. The parameters to decide these noisey weights are stored
     and trained during back propagation.
     """
-    def __init__(self,in_features,out_features, sigma_init=0.017,bias=True):
+
+    def __init__(self, in_features, out_features, sigma_init=0.017, bias=True):
         super(NoisyLinear, self).__init__(in_features, out_features, bias=bias)
 
         # Make sigma trainable
-        self.sigma_weight = nn.Parameter(torch.full((out_features, in_features), sigma_init))
+        self.sigma_weight = nn.Parameter(
+            torch.full((out_features, in_features), sigma_init)
+        )
         # creates a tensor that wont be update during back propagation
         self.register_buffer("epsilon_weight", torch.zeros(out_features, in_features))
 
@@ -35,7 +38,7 @@ class NoisyLinear(nn.Linear):
         """
         Re-initialises the layer
         """
-        std = math.sqrt(3/self.in_features)
+        std = math.sqrt(3 / self.in_features)
         self.weight.data.uniform_(-std, std)
         self.bias.data.uniform_(-std, std)
 
@@ -60,10 +63,15 @@ class NoisyFactorizedLinear(nn.Linear):
     NoisyNet layer with factorized gaussian noise
     N.B. nn.Linear already initializes weight and bias to
     """
+
     def __init__(self, in_features, out_features, sigma_zero=0.4, bias=True):
-        super(NoisyFactorizedLinear, self).__init__(in_features, out_features, bias=bias)
+        super(NoisyFactorizedLinear, self).__init__(
+            in_features, out_features, bias=bias
+        )
         sigma_init = sigma_zero / math.sqrt(in_features)
-        self.sigma_weight = nn.Parameter(torch.full((out_features, in_features), sigma_init))
+        self.sigma_weight = nn.Parameter(
+            torch.full((out_features, in_features), sigma_init)
+        )
         self.register_buffer("epsilon_input", torch.zeros(1, in_features))
         self.register_buffer("epsilon_output", torch.zeros(out_features, 1))
         if bias:
@@ -85,7 +93,7 @@ class NoisyFactorizedLinear(nn.Linear):
 
 
 def distributional_projection(next_distr, rewards, dones, Vmin, Vmax, n_atoms, gamma):
-    '''
+    """
     For each atom the network predicts that the discounted value will fall into this atom's range.
     This function performs the contraction of distribution of the next states best action and projects the results back
     into the original algorithm
@@ -98,7 +106,7 @@ def distributional_projection(next_distr, rewards, dones, Vmin, Vmax, n_atoms, g
     :param n_atoms: the number of categories in the distribution
     :param gamma: the discount factor
     :return: the projected distribution
-    '''
+    """
 
     batch_size = len(rewards)
     projected_distribution = np.zeros((batch_size, n_atoms), dtype=np.float32)
@@ -107,7 +115,9 @@ def distributional_projection(next_distr, rewards, dones, Vmin, Vmax, n_atoms, g
 
     for atom in range(n_atoms):
         # calculate where each atom will be projected
-        target_atom = np.minimum(Vmax, np.maximum(Vmin, rewards + (Vmin + atom * delta_z) * gamma))
+        target_atom = np.minimum(
+            Vmax, np.maximum(Vmin, rewards + (Vmin + atom * delta_z) * gamma)
+        )
         # calculate the atom numbers the sample has projected
         projected_atom = (target_atom - Vmin) / delta_z
 
@@ -117,12 +127,18 @@ def distributional_projection(next_distr, rewards, dones, Vmin, Vmax, n_atoms, g
 
         # if the upper and lower points of the atom are equal, lands exactly on target
         eq_mask = upper_bound == lower_bound
-        projected_distribution[eq_mask, lower_bound[eq_mask]] += next_distr[eq_mask,atom]
+        projected_distribution[eq_mask, lower_bound[eq_mask]] += next_distr[
+            eq_mask, atom
+        ]
 
         # if the upper and lower points of the atom are not equal, lands between 2 atoms
         ne_mask = upper_bound != lower_bound
-        projected_distribution[ne_mask, lower_bound[ne_mask]] += next_distr[ne_mask, atom] * (upper_bound - projected_atom)[ne_mask]
-        projected_distribution[ne_mask, upper_bound[ne_mask]] += next_distr[ne_mask, atom] * (projected_atom - lower_bound)[ne_mask]
+        projected_distribution[ne_mask, lower_bound[ne_mask]] += (
+            next_distr[ne_mask, atom] * (upper_bound - projected_atom)[ne_mask]
+        )
+        projected_distribution[ne_mask, upper_bound[ne_mask]] += (
+            next_distr[ne_mask, atom] * (projected_atom - lower_bound)[ne_mask]
+        )
 
         # handles situation of the next state is terminal, dont take into account next distr, just have prob of 1
         if dones.any():
@@ -145,7 +161,11 @@ def distributional_projection(next_distr, rewards, dones, Vmin, Vmax, n_atoms, g
             ne_dones[dones] = ne_mask
 
             if ne_dones.any():
-                projected_distribution[ne_dones, lower_bound] = (upper_bound - projected_atom)[ne_mask]
-                projected_distribution[ne_dones, upper_bound] = (projected_atom - lower_bound)[ne_mask]
+                projected_distribution[ne_dones, lower_bound] = (
+                    upper_bound - projected_atom
+                )[ne_mask]
+                projected_distribution[ne_dones, upper_bound] = (
+                    projected_atom - lower_bound
+                )[ne_mask]
 
         return projected_distribution

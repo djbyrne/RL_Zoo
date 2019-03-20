@@ -6,11 +6,13 @@ from collections import namedtuple
 from runner import Runner
 
 # those entries are emitted from ExperienceSourceFirstLast. Reward is discounted over the trajectory piece
-ExperienceFirstLast = collections.namedtuple('ExperienceFirstLast', ('state', 'action', 'reward', 'last_state'))
+ExperienceFirstLast = collections.namedtuple(
+    "ExperienceFirstLast", ("state", "action", "reward", "last_state")
+)
 
 
 class BaseBuffer:
-    def __init__(self,runner, buffer_size):
+    def __init__(self, runner, buffer_size):
         return None
 
     def __len__(self):
@@ -125,13 +127,13 @@ class PrioritizedExperienceReplayBuffer:
         if len(self.buffer) == self.capacity:
             priorities = self.priorities
         else:
-            priorities = self.priorities[:self.pos]
+            priorities = self.priorities[: self.pos]
 
         # convert priorities to probabilities
         probabilities = priorities ** self.prob_alpha
         probabilities /= probabilities.sum()
 
-        indices = np.random.choice(len(self.buffer), batch_size,p=probabilities)
+        indices = np.random.choice(len(self.buffer), batch_size, p=probabilities)
         samples = [self.buffer[idx] for idx in indices]
 
         total = len(self.buffer)

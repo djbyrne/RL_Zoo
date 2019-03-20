@@ -6,6 +6,7 @@ import torch.nn.functional as F
 import numpy as np
 from .ops import NoisyLinear, get_conv_out
 
+
 class Network(nn.Module):
     def __init__(self, input_shape, n_actions):
         super(Network, self).__init__()
@@ -16,21 +17,17 @@ class Network(nn.Module):
             nn.Conv2d(32, 64, kernel_size=4, stride=2),
             nn.ReLU(),
             nn.Conv2d(64, 64, kernel_size=3, stride=1),
-            nn.ReLU()
+            nn.ReLU(),
         )
 
         conv_out_size = get_conv_out(input_shape, self.conv)
 
         self.fc_advantage = nn.Sequential(
-            nn.Linear(conv_out_size, 512),
-            nn.ReLU(),
-            nn.Linear(512, n_actions)
+            nn.Linear(conv_out_size, 512), nn.ReLU(), nn.Linear(512, n_actions)
         )
 
         self.fc_value = nn.Sequential(
-            nn.Linear(conv_out_size, 512),
-            nn.ReLU(),
-            nn.Linear(512, 1)
+            nn.Linear(conv_out_size, 512), nn.ReLU(), nn.Linear(512, 1)
         )
 
     def forward(self, x):

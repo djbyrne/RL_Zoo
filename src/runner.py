@@ -10,10 +10,11 @@ from collections import namedtuple, deque
 
 from agents import BaseAgent
 from wrapper import UnityWrapper
+
 # from common import utils
 
 # one single experience step
-Experience = namedtuple('Experience', ['state', 'action', 'reward', 'done'])
+Experience = namedtuple("Experience", ["state", "action", "reward", "done"])
 
 
 class Runner:
@@ -21,6 +22,7 @@ class Runner:
     Simple n-step experience source using single or multiple environments
     Every experience contains n list of Experience entries
     """
+
     def __init__(self, env, agent, steps_count=1, steps_delta=1, vectorized=False):
         """
         Create simple experience source
@@ -47,7 +49,6 @@ class Runner:
         self.total_rewards = []
         self.total_steps = []
         self.vectorized = vectorized
-
 
     def __iter__(self):
         states, agent_states, histories, cur_rewards, cur_steps = [], [], [], [], []
@@ -76,15 +77,19 @@ class Runner:
             states_input = []
             states_indices = []
 
-            #gather actions for all agents/environments
+            # gather actions for all agents/environments
             for idx, state in enumerate(states):
                 if state is None:
-                    actions[idx] = self.pool[0].action_space.sample()  # assume that all envs are from the same family
+                    actions[idx] = self.pool[
+                        0
+                    ].action_space.sample()  # assume that all envs are from the same family
                 else:
                     states_input.append(state)
                     states_indices.append(idx)
             if states_input:
-                states_actions, new_agent_states = self.agent(states_input, agent_states)
+                states_actions, new_agent_states = self.agent(
+                    states_input, agent_states
+                )
                 for idx, action in enumerate(states_actions):
                     g_idx = states_indices[idx]
                     actions[g_idx] = action
@@ -93,10 +98,10 @@ class Runner:
 
             global_ofs = 0
 
-            #execute actions for all agents/environments
+            # execute actions for all agents/environments
             for env_idx, (env, action_n) in enumerate(zip(self.pool, grouped_actions)):
 
-                #step
+                # step
                 if self.vectorized:
                     next_state_n, r_n, is_done_n, _ = env.step(action_n)
                 else:
@@ -105,8 +110,10 @@ class Runner:
 
                 # env.render()
 
-                #process next states and rewards
-                for ofs, (action, next_state, r, is_done) in enumerate(zip(action_n, next_state_n, r_n, is_done_n)):
+                # process next states and rewards
+                for ofs, (action, next_state, r, is_done) in enumerate(
+                    zip(action_n, next_state_n, r_n, is_done_n)
+                ):
                     idx = global_ofs + ofs
                     state = states[idx]
                     history = histories[idx]
@@ -114,8 +121,15 @@ class Runner:
                     cur_rewards[idx] += r
                     cur_steps[idx] += 1
                     if state is not None:
-                        history.append(Experience(state=state, action=action, reward=r, done=is_done))
-                    if len(history) == self.steps_count and iter_idx % self.steps_delta == 0:
+                        history.append(
+                            Experience(
+                                state=state, action=action, reward=r, done=is_done
+                            )
+                        )
+                    if (
+                        len(history) == self.steps_count
+                        and iter_idx % self.steps_delta == 0
+                    ):
                         yield tuple(history)
                     states[idx] = next_state
                     if is_done:
@@ -158,13 +172,15 @@ def _group_list(items, lens):
     res = []
     cur_ofs = 0
     for g_len in lens:
-        res.append(items[cur_ofs:cur_ofs+g_len])
+        res.append(items[cur_ofs : cur_ofs + g_len])
         cur_ofs += g_len
     return res
 
 
 # those entries are emitted from ExperienceSourceFirstLast. Reward is discounted over the trajectory piece
-ExperienceFirstLast = collections.namedtuple('ExperienceFirstLast', ('state', 'action', 'reward', 'last_state'))
+ExperienceFirstLast = collections.namedtuple(
+    "ExperienceFirstLast", ("state", "action", "reward", "last_state")
+)
 
 
 class RunnerSourceFirstLast(Runner):
@@ -175,9 +191,13 @@ class RunnerSourceFirstLast(Runner):
     If we have partial trajectory at the end of episode, last_state will be None
     """
 
-    def __init__(self, env, agent, gamma, steps_count=1, steps_delta=1, vectorized=False):
-        assert isinstance(gamma,float)
-        super(RunnerSourceFirstLast, self).__init__(env, agent, steps_count+1, steps_delta, vectorized=vectorized)
+    def __init__(
+        self, env, agent, gamma, steps_count=1, steps_delta=1, vectorized=False
+    ):
+        assert isinstance(gamma, float)
+        super(RunnerSourceFirstLast, self).__init__(
+            env, agent, steps_count + 1, steps_delta, vectorized=vectorized
+        )
         self.gamma = gamma
         self.steps = steps_count
 
@@ -193,14 +213,18 @@ class RunnerSourceFirstLast(Runner):
             for e in reversed(elems):
                 total_reward *= self.gamma
                 total_reward += e.reward
-            yield ExperienceFirstLast(state=exp[0].state, action=exp[0].action,
-                                      reward=total_reward, last_state=last_state)
+            yield ExperienceFirstLast(
+                state=exp[0].state,
+                action=exp[0].action,
+                reward=total_reward,
+                last_state=last_state,
+            )
 
 
 def discount_with_dones(rewards, dones, gamma):
     discounted = []
     r = 0
     for reward, done in zip(rewards[::-1], dones[::-1]):
-        r = reward + gamma*r*(1.-done)
+        r = reward + gamma * r * (1.0 - done)
         discounted.append(r)
     return discounted[::-1]

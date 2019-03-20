@@ -3,7 +3,8 @@ Agent is something which converts states into actions and has state
 """
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join('..', 'src')))
+
+sys.path.append(os.path.abspath(os.path.join("..", "src")))
 import copy
 import numpy as np
 import torch
@@ -18,6 +19,7 @@ class BaseAgent:
     """
     Abstract Agent interface
     """
+
     def initial_state(self):
         """
         Should create initial empty state for the agent. It will be called for the start of the episode
@@ -38,13 +40,20 @@ class BaseAgent:
 
         raise NotImplementedError
 
+
 class DQNAgent(BaseAgent):
     """
     DQNAgent is a memoryless DQN agent which calculates Q values
     from the observations and  converts them into the actions using action_selector
     """
 
-    def __init__(self, dqn_model, action_selector, device="cpu", preprocessor=utils.default_states_preprocessor):
+    def __init__(
+        self,
+        dqn_model,
+        action_selector,
+        device="cpu",
+        preprocessor=utils.default_states_preprocessor,
+    ):
         self.dqn_model = dqn_model
         self.action_selector = action_selector
         self.preprocessor = preprocessor
@@ -52,7 +61,7 @@ class DQNAgent(BaseAgent):
 
     def __call__(self, states, agent_states=None):
         if agent_states is None:
-            agent_states = [None] *len(states)
+            agent_states = [None] * len(states)
 
         if self.preprocessor is not None:
             states = self.preprocessor(states)
@@ -91,13 +100,20 @@ class TargetNetwork:
 
         self.target_model.load_state_dict(tgt_state)
 
+
 class PolicyGradientAgent(BaseAgent):
     """
     Policy agent gets action probabilities from the model and samples actions from it
     """
 
-    def __init__(self, model, action_selector=actions.ProbabilityActionSelector(), device="cpu",
-                 apply_softmax=False, preprocessor=utils.default_states_preprocessor):
+    def __init__(
+        self,
+        model,
+        action_selector=actions.ProbabilityActionSelector(),
+        device="cpu",
+        apply_softmax=False,
+        preprocessor=utils.default_states_preprocessor,
+    ):
         self.model = model
         self.action_selector = action_selector
         self.device = device
@@ -115,7 +131,7 @@ class PolicyGradientAgent(BaseAgent):
         Returns:
             list of actions
         """
-        
+
         if agent_states is None:
             agent_states = [None] * len(states)
 
@@ -128,7 +144,7 @@ class PolicyGradientAgent(BaseAgent):
 
         if self.apply_softmax:
             probs_v = F.softmax(probs_v, dim=1)
-            
+
         probs = probs_v.data.cpu().numpy()
         actions = self.action_selector(probs)
         return np.array(actions), agent_states
