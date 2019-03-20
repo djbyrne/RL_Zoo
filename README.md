@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/djbyrne/RL_Zoo.svg?branch=master)](https://travis-ci.com/djbyrne/RL_Zoo)
+
 # RL Zoo (In Progress)
 The goal of this repo is to provide simple and clean examples of the major Reinforcement Learning algorithms within a range 
 of environments. 
