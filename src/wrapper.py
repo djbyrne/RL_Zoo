@@ -287,10 +287,9 @@ class ImageToPyTorch(gym.ObservationWrapper):
         return np.swapaxes(observation, 2, 0)
 
 
-def build_env_wrapper(env_name, env_type='basic'):
+def build_env_wrapper(env_name, env_type="basic"):
     """
     takes in environment name and builds the environment wrapper accordingly
-
     Args:
         env_name: the name of the environment
         type: what library does it belong to
@@ -298,29 +297,30 @@ def build_env_wrapper(env_name, env_type='basic'):
             - atari
             - unity
             - doom
-
     Returns:
         environment object with appropriate wrapping
     """
-    if env_type == 'basic':
+    if env_type == "basic":
         env = gym.make(env_name)
-        return env
-    elif env_type == 'atari':
+        return [env, env.observation_space.shape, env.action_space.n]
+    elif env_type == "atari":
         env = gym.make(env_name)
         env = wrap_dqn_atari(env)
-        return env
-    elif env_type == 'unity':
-        env = UnityWrapper(ENV_PATH+env_name)
-        return env, env.observation_space.shape, env.action_space_size 
+        return [env, env.observation_space.shape, env.action_space.n]
+    elif env_type == "unity":
+        env = UnityWrapper(ENV_PATH + env_name)
+        return [env, env.observation_space.shape, env.action_space_size]
 
 
-def build_multi_env(env_name, env_type='basic', num_envs=4):
+def build_multi_env(env_name, env_type="basic", num_envs=4):
     """
     builds multi environment
     """
 
     make_env = lambda: build_env_wrapper(env_name, env_type)
-    envs = [make_env() for _ in range(num_envs)]
+    output = [make_env() for _ in range(num_envs)]
+    envs = [item[0] for item in output]
+
     return envs, envs[0].observation_space.shape, envs[0].action_space.n
         
 

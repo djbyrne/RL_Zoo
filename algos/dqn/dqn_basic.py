@@ -69,7 +69,7 @@ if __name__ == "__main__":
 
 			# learning step
 			optimizer.zero_grad()
-			batch = buffer.sample(params['batch_size'])
+			batch = buffer.sample(1)
 			loss_v = loss.calc_loss_dqn(batch, net, tgt_net.target_model,params['gamma'],device)
 			loss_v.backward()
 			optimizer.step()
