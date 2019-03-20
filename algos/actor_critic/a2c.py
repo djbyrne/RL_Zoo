@@ -86,5 +86,3 @@ if __name__ == "__main__":
 
             nn_utils.clip_grad_norm_(net.parameters(), params["grad_clip"])
             optimizer.step()
-            # get full loss
-            loss_v += loss_policy
