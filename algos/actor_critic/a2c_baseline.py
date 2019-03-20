@@ -19,37 +19,33 @@ from common import logger
 GAMMA = 0.99
 LEARNING_RATE = 0.001
 ENTROPY_BETA = 0.01
-BATCH_SIZE = 128
-NUM_ENVS = 50
+BATCH_SIZE = 64
+NUM_ENVS = 5
 
-REWARD_STEPS = 4
-CLIP_GRAD = 0.1
+REWARD_STEPS = 5
+CLIP_GRAD = 0.5
 
 
 class AtariA2C(nn.Module):
     def __init__(self, input_shape, n_actions):
         super(AtariA2C, self).__init__()
 
-        self.conv = nn.Sequential(
-            nn.Conv2d(input_shape[0], 32, kernel_size=8, stride=4),
-            nn.ReLU(),
-            nn.Conv2d(32, 64, kernel_size=4, stride=2),
-            nn.ReLU(),
-            nn.Conv2d(64, 64, kernel_size=3, stride=1),
+        self.body = nn.Sequential(
+            nn.Linear(input_shape[0], 64),
             nn.ReLU()
         )
 
-        conv_out_size = self._get_conv_out(input_shape)
+        # conv_out_size = self._get_conv_out(input_shape)
         self.policy = nn.Sequential(
-            nn.Linear(conv_out_size, 512),
+            nn.Linear(64, 64),
             nn.ReLU(),
-            nn.Linear(512, n_actions)
+            nn.Linear(64, n_actions)
         )
 
         self.value = nn.Sequential(
-            nn.Linear(conv_out_size, 512),
+            nn.Linear(64, 64),
             nn.ReLU(),
-            nn.Linear(512, 1)
+            nn.Linear(64, 1)
         )
 
     def _get_conv_out(self, shape):
@@ -57,8 +53,8 @@ class AtariA2C(nn.Module):
         return int(np.prod(o.size()))
 
     def forward(self, x):
-        fx = x.float() / 256
-        conv_out = self.conv(fx).view(fx.size()[0], -1)
+        fx = x.float()
+        conv_out = self.body(fx)
         return self.policy(conv_out), self.value(conv_out)
 
 
@@ -101,12 +97,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     device = torch.device("cuda" if args.cuda else "cpu")
 
-    make_env = lambda: ptan.common.wrappers.wrap_dqn(gym.make("PongNoFrameskip-v4"))
+    make_env = lambda: gym.make("CartPole-v0")
     envs = [make_env() for _ in range(NUM_ENVS)]
-    writer = SummaryWriter(comment="-pong-a2c_")
+    writer = SummaryWriter(comment="-cartpole-a2c_")
 
     net = AtariA2C(envs[0].observation_space.shape, envs[0].action_space.n).to(device)
-    print(net)
 
     agent = ptan.agent.PolicyAgent(lambda x: net(x)[0], apply_softmax=True, device=device)
     exp_source = ptan.experience.ExperienceSourceFirstLast(envs, agent, gamma=GAMMA, steps_count=REWARD_STEPS)
@@ -115,7 +110,7 @@ if __name__ == "__main__":
 
     batch = []
 
-    with logger.RewardTracker(writer, stop_reward=18) as tracker:
+    with logger.RewardTracker(writer, stop_reward=195) as tracker:
         with ptan.common.utils.TBMeanTracker(writer, batch_size=10) as tb_tracker:
             for step_idx, exp in enumerate(exp_source):
                 batch.append(exp)

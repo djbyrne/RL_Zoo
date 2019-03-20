@@ -17,6 +17,7 @@ PARAMS = {
     'cartpole': {
         'env_name':         "CartPole-v0",
         'env_type':         'basic',
+        'num_env':          5,
         'stop_reward':      195,
         'run_name':         'cartpole',
         'replay_size':      100000,
@@ -25,10 +26,12 @@ PARAMS = {
         'epsilon_frames':   10**4,
         'epsilon_start':    1.0,
         'epsilon_final':    0.1,
-        'learning_rate':    0.01,
-        'gamma':            1.0,
+        'learning_rate':    0.001,
+        'gamma':            0.99,
         'batch_size':       64,
-        'step_count':       10
+        'step_count':       10,
+        'grad_clip':        5,
+        'beta':             0.01
     },
     'lunarlander': {
         'env_name':         "LunarLander-v2",

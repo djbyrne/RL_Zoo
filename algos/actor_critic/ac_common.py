@@ -16,14 +16,14 @@ from common import hyperparameters
 
 def unpack_batch(batch, net, device='cpu'):
     """
-	Convert batch into training tensors
+	Takes in a batch of environment transitions 
 
 	Args:
-		batch: batch of stored experiences
+		batch: batch of stored experiences/environment transitions
 		net: neural network
 
 	Returns:
-		states variable, actions tensor, reference values variable
+		states variable, actions tensor, Q values
 	"""
 
     params = hyperparameters.PARAMS['pong_a2c']
@@ -32,6 +32,7 @@ def unpack_batch(batch, net, device='cpu'):
     rewards = []
     not_done_idx = []
     last_states = []
+
     for idx, exp in enumerate(batch):
         states.append(np.array(exp.state, copy=False))
         actions.append(int(exp.action))
@@ -39,10 +40,13 @@ def unpack_batch(batch, net, device='cpu'):
         if exp.last_state is not None:
             not_done_idx.append(idx)
             last_states.append(np.array(exp.last_state, copy=False))
+
     states_v = torch.FloatTensor(states).to(device)
     actions_t = torch.LongTensor(actions).to(device)
+
     # handle rewards
     rewards_np = np.array(rewards, dtype=np.float32)
+
     if not_done_idx:
         last_states_v = torch.FloatTensor(last_states).to(device)
         last_vals_v = net(last_states_v)[1]
