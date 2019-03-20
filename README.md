@@ -97,7 +97,11 @@ To set up your python environment to run the code in this repository, follow the
 
 **Evaluation Script**
 
-- After training evaluate the performance of an agent over the course of 100 episodes or against a proven baseline such as OpenAI  Baselines
+- [ ] After training evaluate the performance of an agent over the course of 100 episodes or against a proven baseline such as OpenAI  Baselines
+
+- [ ] Add plots on baseline environment for all agents
+
+- [ ] Save model weights
 
 **Unit Test Key Areas**
 
