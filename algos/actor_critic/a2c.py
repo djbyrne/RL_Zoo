@@ -2,7 +2,6 @@
 import sys
 import os
 import numpy as np
-from ac_common import unpack_batch
 
 sys.path.append(os.path.abspath(os.path.join("../../", "src")))
 import gym
@@ -26,6 +25,7 @@ import torch.nn.functional as F
 from networks import actor_critic_mlp
 from common import hyperparameters, logger, utils
 from memory import ExperienceReplayBuffer
+from loss import calc_a2c_loss
 
 
 if __name__ == "__main__":
@@ -76,37 +76,15 @@ if __name__ == "__main__":
             if len(batch) < params["batch_size"]:
                 continue
 
-            states_v, actions_t, vals_ref_v = unpack_batch(batch, net, device=device)
+            loss_policy, loss_v = calc_a2c_loss(batch, net, params)
             batch.clear()
 
             optimizer.zero_grad()
-            logits_v, value_v = net(states_v)
-            loss_value_v = F.mse_loss(value_v.squeeze(-1), vals_ref_v)
 
-            log_prob_v = F.log_softmax(logits_v, dim=1)
-            adv_v = vals_ref_v - value_v.detach()
-            log_prob_actions_v = (
-                adv_v * log_prob_v[range(params["batch_size"]), actions_t]
-            )
-            loss_policy_v = -log_prob_actions_v.mean()
-
-            prob_v = F.softmax(logits_v, dim=1)
-            entropy_loss_v = params["beta"] * (prob_v * log_prob_v).sum(dim=1).mean()
-
-            # calculate policy gradients only
-            loss_policy_v.backward(retain_graph=True)
-            grads = np.concatenate(
-                [
-                    p.grad.data.cpu().numpy().flatten()
-                    for p in net.parameters()
-                    if p.grad is not None
-                ]
-            )
-
-            # apply entropy and value gradients
-            loss_v = entropy_loss_v + loss_value_v
+            loss_policy.backward(retain_graph=True)
             loss_v.backward()
+
             nn_utils.clip_grad_norm_(net.parameters(), params["grad_clip"])
             optimizer.step()
             # get full loss
-            loss_v += loss_policy_v
+            loss_v += loss_policy
