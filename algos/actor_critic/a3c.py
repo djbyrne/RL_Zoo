@@ -29,25 +29,14 @@ from memory import ExperienceReplayBuffer
 from loss import calc_a2c_loss
 import collections
 
-GAMMA = 0.99
-LEARNING_RATE = 0.001
-ENTROPY_BETA = 0.01
-BATCH_SIZE = 64
 
-REWARD_STEPS = 4
-CLIP_GRAD = 5
-
-PROCESSES_COUNT = 4
-NUM_ENVS = 2
-
-
-def gather_data(envs, net, device, train_queue):
+def gather_data(envs, net, device, train_queue, params):
 
     agent = ptan.agent.PolicyAgent(
         lambda x: net(x)[0], device=device, apply_softmax=True
     )
     exp_source = ptan.experience.ExperienceSourceFirstLast(
-        envs, agent, gamma=GAMMA, steps_count=REWARD_STEPS
+        envs, agent, gamma=params['gamma'], steps_count=params['step_count']
     )
 
     for exp in exp_source:
@@ -57,12 +46,12 @@ def gather_data(envs, net, device, train_queue):
         train_queue.put(exp)
 
 
-def init_procs(envs, process_count=4):
+def init_procs(envs, params):
 
-    train_queue = mp.Queue(maxsize=PROCESSES_COUNT)
+    train_queue = mp.Queue(maxsize= params['num_procs'] )
     data_proc_list = []
-    for _ in range(PROCESSES_COUNT):
-        data_proc = mp.Process(target=gather_data, args=(envs,net, device, train_queue))
+    for _ in range(params['num_procs']):
+        data_proc = mp.Process(target=gather_data, args=(envs,net, device, train_queue, params))
         data_proc.start()
         data_proc_list.append(data_proc)
 
@@ -73,7 +62,7 @@ TotalReward = collections.namedtuple("TotalReward", field_names="reward")
 
 if __name__ == "__main__":
     # CONFIG
-    config = "cartpole"
+    config = "cartpole_a3c"
     params = hyperparameters.PARAMS[config]
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -97,7 +86,7 @@ if __name__ == "__main__":
     optimizer = optim.Adam(net.parameters(), lr=params["learning_rate"], eps=1e-3)
 
     # initialise processes
-    train_queue, data_proc_list = init_procs(envs, PROCESSES_COUNT)
+    train_queue, data_proc_list = init_procs(envs, params)
 
     batch = []
     step_idx = 0
