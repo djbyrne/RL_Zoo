@@ -11,6 +11,7 @@ from tensorboardX import SummaryWriter
 import actions
 import agents
 import runner
+import config
 from wrapper import build_env_wrapper
 from networks import dqn_cnn_net
 from common import hyperparameters, logger
@@ -19,7 +20,7 @@ from memory import PrioritizedExperienceReplayBuffer
 
 if __name__ == "__main__":
     # CONFIG
-    params = hyperparameters.PARAMS["pong"]
+    params = config.PARAMS["pong"]
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--cuda", default=False, action="store_true", help="Enable Cuda"

@@ -12,6 +12,7 @@ import actions
 import agents
 import runner
 import wrapper
+import config
 from models import dqn_model
 from common import hyperparameters, logger
 from memory import ExperienceReplayBuffer
@@ -19,7 +20,7 @@ from memory import ExperienceReplayBuffer
 
 if __name__ == "__main__":
     # CONFIG
-    params = hyperparameters.PARAMS["pong"]
+    params = config.PARAMS["pong"]
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--cuda", default=False, action="store_true", help="Enable Cuda"

@@ -11,6 +11,7 @@ import torch.optim as optim
 
 from tensorboardX import SummaryWriter
 from wrapper import build_env_wrapper
+import config
 
 import actions, agents, runner, common, wrapper, runner
 from networks import dqn_noisy_net
@@ -19,7 +20,7 @@ from memory import ExperienceReplayBuffer
 
 if __name__ == "__main__":
     # CONFIG
-    params = hyperparameters.PARAMS["pong"]
+    params = config.PARAMS["pong"]
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--cuda", default=False, action="store_true", help="Enable Cuda"

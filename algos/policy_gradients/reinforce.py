@@ -16,6 +16,7 @@ import runner
 from wrapper import build_env_wrapper
 import wrapper
 import loss
+import config
 from networks import dqn_cnn_net, dqn_mlp_net
 from common import hyperparameters, logger, utils
 from memory import ExperienceReplayBuffer
@@ -23,7 +24,7 @@ from memory import ExperienceReplayBuffer
 
 if __name__ == "__main__":
     # CONFIG
-    params = hyperparameters.PARAMS["cartpole"]
+    params = config.PARAMS["cartpole"]
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--cuda", default=False, action="store_true", help="Enable Cuda"

@@ -11,6 +11,7 @@ from tensorboardX import SummaryWriter
 import actions
 import agents
 import runner
+import config
 from wrapper import build_env_wrapper
 from networks import dqn_rainbow_net
 from common import hyperparameters, logger
@@ -18,7 +19,7 @@ from memory import PrioritizedExperienceReplayBuffer
 
 if __name__ == "__main__":
     # CONFIG
-    params = hyperparameters.PARAMS["pong"]
+    params = config.PARAMS["pong"]
     params["epsilon_frames"] *= 2
     parser = argparse.ArgumentParser()
     parser.add_argument(

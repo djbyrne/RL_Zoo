@@ -8,6 +8,7 @@ import argparse
 
 import torch
 import torch.optim as optim
+import config
 
 from tensorboardX import SummaryWriter
 
@@ -19,7 +20,7 @@ from memory import ExperienceReplayBuffer
 
 if __name__ == "__main__":
     # CONFIG
-    params = hyperparameters.PARAMS["pong"]
+    params = config.PARAMS["pong"]
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--cuda", default=False, action="store_true", help="Enable Cuda"

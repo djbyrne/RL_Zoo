@@ -16,6 +16,7 @@ import runner
 from wrapper import build_env_wrapper
 import wrapper
 import loss
+import config
 from pg_common import calculate_entropy, calculate_kl_divergence
 from networks import dqn_cnn_net, dqn_mlp_net
 from common import hyperparameters, logger, utils
@@ -24,21 +25,13 @@ from memory import ExperienceReplayBuffer
 
 if __name__ == "__main__":
     # CONFIG
-    params = hyperparameters.PARAMS["cartpole"]
+    params = config.PARAMS["cartpole"]
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--cuda", default=False, action="store_true", help="Enable Cuda"
     )
     args = parser.parse_args()
     device = torch.device("cuda" if args.cuda else "cpu")
-
-    EPISODES_TO_TRAIN = 4
-    GAMMA = 0.99
-    LEARNING_RATE = 0.01
-    ENTROPY_BETA = 0.01
-    BATCH_SIZE = 64
-
-    REWARD_STEPS = 10
 
     # INIT ENV
     env, observation_space, action_space = build_env_wrapper(
@@ -108,7 +101,9 @@ if __name__ == "__main__":
             loss_policy_v = -log_prob_actions_v.mean()
 
             # # calculate entropy
-            entropy_loss, prob_v = calculate_entropy(logits_v, log_prob_v, beta=0.01)
+            entropy_loss, prob_v = calculate_entropy(
+                logits_v, log_prob_v, beta=params["beta"]
+            )
             loss_v = loss_policy_v + entropy_loss
 
             loss_v.backward()

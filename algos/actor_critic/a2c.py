@@ -21,17 +21,17 @@ import torch
 import torch.nn as nn
 import torch.nn.utils as nn_utils
 import torch.nn.functional as F
+import config
 
 from networks import actor_critic_mlp
-from common import hyperparameters, logger, utils
+from common import logger, utils
 from memory import ExperienceReplayBuffer
 from loss import calc_a2c_loss
 
 
 if __name__ == "__main__":
     # CONFIG
-    config = "cartpole"
-    params = hyperparameters.PARAMS[config]
+    params = config.PARAMS["cartpole"]
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--cuda", default=False, action="store_true", help="Enable Cuda"
@@ -45,7 +45,7 @@ if __name__ == "__main__":
     )
 
     # LOGGING
-    writer = SummaryWriter(comment=config)
+    writer = SummaryWriter(comment=params["env_name"])
 
     # NETWORK
     net = actor_critic_mlp.Network(observation_space, action_space).to(device)

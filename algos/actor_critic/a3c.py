@@ -22,9 +22,10 @@ import torch.nn as nn
 import torch.nn.utils as nn_utils
 import torch.nn.functional as F
 import torch.multiprocessing as mp
+import config
 
 from networks import actor_critic_mlp
-from common import hyperparameters, logger, utils
+from common import logger, utils
 from memory import ExperienceReplayBuffer
 from loss import calc_a2c_loss
 import collections
@@ -47,7 +48,7 @@ def gather_data(envs, net, device, train_queue, params):
         lambda x: net(x)[0], device=device, apply_softmax=True
     )
     exp_source = ptan.experience.ExperienceSourceFirstLast(
-        envs, agent, gamma=params['gamma'], steps_count=params['step_count']
+        envs, agent, gamma=params["gamma"], steps_count=params["step_count"]
     )
 
     for exp in exp_source:
@@ -71,22 +72,24 @@ def init_procs(envs, params):
         data_proc_list: list to store each gathering process
     """
 
-    train_queue = mp.Queue(maxsize= params['num_procs'] )
+    train_queue = mp.Queue(maxsize=params["num_procs"])
     data_proc_list = []
-    for _ in range(params['num_procs']):
-        data_proc = mp.Process(target=gather_data, args=(envs,net, device, train_queue, params))
+    for _ in range(params["num_procs"]):
+        data_proc = mp.Process(
+            target=gather_data, args=(envs, net, device, train_queue, params)
+        )
         data_proc.start()
         data_proc_list.append(data_proc)
 
     return train_queue, data_proc_list
+
 
 TotalReward = collections.namedtuple("TotalReward", field_names="reward")
 
 
 if __name__ == "__main__":
     # CONFIG
-    config = "cartpole_a3c"
-    params = hyperparameters.PARAMS[config]
+    params = config.PARAMS["cartpole"]
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--cuda", default=False, action="store_true", help="Enable Cuda"
@@ -100,7 +103,7 @@ if __name__ == "__main__":
     )
 
     # LOGGING
-    writer = SummaryWriter(comment=config)
+    writer = SummaryWriter(comment=params["env_name"])
 
     # NETWORK
     net = actor_critic_mlp.Network(observation_space, action_space).to(device)
@@ -116,7 +119,7 @@ if __name__ == "__main__":
 
     # TRAINING
     try:
-        with logger.RewardTracker(writer, stop_reward=params['stop_reward']) as tracker:
+        with logger.RewardTracker(writer, stop_reward=params["stop_reward"]) as tracker:
             while True:
                 train_entry = train_queue.get()
                 if isinstance(train_entry, TotalReward):
