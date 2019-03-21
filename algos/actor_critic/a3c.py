@@ -31,6 +31,17 @@ import collections
 
 
 def gather_data(envs, net, device, train_queue, params):
+    """
+    carry out the actions of the agents in parallel while gathering the experience of each agent
+
+    Args:
+        envs: list of environments
+        net: neural network
+        device: cpu or cuda
+        train_queue: queue to store the data gathered by all agents
+        params: config parameters
+
+    """
 
     agent = ptan.agent.PolicyAgent(
         lambda x: net(x)[0], device=device, apply_softmax=True
@@ -47,6 +58,18 @@ def gather_data(envs, net, device, train_queue, params):
 
 
 def init_procs(envs, params):
+    """
+    initialising the threads used to run several agents in parallel. 
+    Each process will execute several agents which will have their data added to the master train_queue
+
+    Args:
+        envs: list of environments to be used in parallel training
+        params: config parameters
+
+    Returns:
+        train_queue: master queue to hold all experience gathered by each process
+        data_proc_list: list to store each gathering process
+    """
 
     train_queue = mp.Queue(maxsize= params['num_procs'] )
     data_proc_list = []
