@@ -97,6 +97,10 @@ To set up your python environment to run the code in this repository, follow the
 
 - Include the entire architecture of the network inside the param file denoting the number of layers and nodes in a network
 
+**Save Experiment Weights**
+
+- Save the model weighs and params for a particular experiment
+
 **Evaluation Script**
 
 - [ ] After training evaluate the performance of an agent over the course of 100 episodes or against a proven baseline such as OpenAI  Baselines
