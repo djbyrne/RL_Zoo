@@ -74,7 +74,7 @@ To set up your python environment to run the code in this repository, follow the
 - [X] REINFORCE
 - [X] Vanilla Policy Gradient
 - [X] A2C
-- [ ] A3C
+- [X] A3C
 - [ ] PPO
 - [ ] DDPG
 - [ ] D4PG
@@ -96,6 +96,10 @@ To set up your python environment to run the code in this repository, follow the
 **Refactor parameters file**
 
 - Include the entire architecture of the network inside the param file denoting the number of layers and nodes in a network
+
+**Save Experiment Weights**
+
+- Save the model weighs and params for a particular experiment
 
 **Evaluation Script**
 
