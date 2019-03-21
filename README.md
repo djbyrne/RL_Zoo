@@ -74,7 +74,7 @@ To set up your python environment to run the code in this repository, follow the
 - [X] REINFORCE
 - [X] Vanilla Policy Gradient
 - [X] A2C
-- [ ] A3C
+- [X] A3C
 - [ ] PPO
 - [ ] DDPG
 - [ ] D4PG
