@@ -339,7 +339,7 @@ def build_multi_env(env_name, env_type="basic", num_envs=4):
     output = [make_env() for _ in range(num_envs)]
     envs = [item[0] for item in output]
 
-    return envs, envs[0].observation_space.shape, envs[0].action_space.n
+    return envs, envs[0].observation_space.shape, envs[0].action_space.n 
 
 
 def wrap_dqn_atari(
