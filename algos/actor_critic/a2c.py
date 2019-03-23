@@ -13,7 +13,7 @@ from tensorboardX import SummaryWriter
 import actions
 import agents
 import runner
-from wrapper import build_multi_env
+from wrapper import build_multi_env, build_env_wrapper
 import wrapper
 import loss
 import ptan
@@ -31,7 +31,7 @@ from loss import calc_a2c_loss
 
 if __name__ == "__main__":
     # CONFIG
-    params = config.PARAMS["cartpole"]
+    params = config.PARAMS["pendulum"]
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--cuda", default=False, action="store_true", help="Enable Cuda"
@@ -43,6 +43,7 @@ if __name__ == "__main__":
     envs, observation_space, action_space = build_multi_env(
         params["env_name"], env_type=params["env_type"], num_envs=params["num_env"]
     )
+    #envs, observation_space, action_space = build_env_wrapper(params['env_name'], params['env_type'])
 
     # LOGGING
     writer = SummaryWriter(comment=params["env_name"])
@@ -51,7 +52,7 @@ if __name__ == "__main__":
     net = actor_critic_mlp.Network(observation_space, action_space).to(device)
 
     # AGENT
-    agent = agents.ActorCriticAgent(
+    agent = agents.PolicyGradientAgent(
         lambda x: net(x)[0], apply_softmax=True, device=device
     )
 

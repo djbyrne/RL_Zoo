@@ -327,7 +327,7 @@ def build_env_wrapper(env_name, env_type="basic"):
         return [env, env.observation_space.shape, env.action_space.n]
     elif env_type == "unity":
         env = UnityWrapper(ENV_PATH + env_name)
-        return [env, env.observation_space.shape, env.action_space_size]
+        return env, env.observation_space.shape, env.action_space_size
 
 
 def build_multi_env(env_name, env_type="basic", num_envs=4):
