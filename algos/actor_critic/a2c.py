@@ -51,7 +51,7 @@ if __name__ == "__main__":
     net = actor_critic_mlp.Network(observation_space, action_space).to(device)
 
     # AGENT
-    agent = agents.PolicyGradientAgent(
+    agent = agents.ActorCriticAgent(
         lambda x: net(x)[0], apply_softmax=True, device=device
     )
 

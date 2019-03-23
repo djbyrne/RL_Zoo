@@ -141,10 +141,54 @@ class PolicyGradientAgent(BaseAgent):
                 states = states.to(self.device)
 
         probs_v = self.model(states)
-
+        print(probs_v)
         if self.apply_softmax:
             probs_v = F.softmax(probs_v, dim=1)
 
         probs = probs_v.data.cpu().numpy()
         actions = self.action_selector(probs)
         return np.array(actions), agent_states
+
+
+class ContinuousAgent(BaseAgent):
+    def __init__(
+        self,
+        model,
+        action,
+        action_selector=actions.VarianceSampleSelector(),
+        device="cpu",
+        apply_softmax=False,
+        preprocessor=utils.default_states_preprocessor,
+    ):
+
+        self.model = model
+        self.action_selector = action_selector
+        self.device = device
+        self.apply_softmax = apply_softmax
+        self.preprocessor = preprocessor
+
+    def __call__(self, states, agent_states=None):
+        """
+        Return continuous action from a given list of states
+
+        Args:
+            states: batch of states
+            agent_states: 
+
+        Returns:
+            list of actions
+        """
+        if agent_states is None:
+            agent_states = [None] * len(states)
+
+        if self.preprocessor is not None:
+            states = self.preprocessor(states)
+            if torch.is_tensor(states):
+                states = states.to(self.device)
+
+        probs_v, var_v, _ = self.model(states)
+        probs = probs_v.data.cpu().numpy()
+
+        actions = self.action_selector(probs, var_v)
+
+        return actions, agent_states
