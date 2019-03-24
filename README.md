@@ -107,7 +107,7 @@ To set up your python environment to run the code in this repository, follow the
 
 - [ ] Add plots on baseline environment for all agents
 
-- [ ] Save model weights
+- [X] Save model weights
 
 **Unit Test Key Areas**
 
