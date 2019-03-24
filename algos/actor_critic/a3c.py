@@ -119,7 +119,9 @@ if __name__ == "__main__":
 
     # TRAINING
     try:
-        with logger.RewardTracker(writer, stop_reward=params["stop_reward"]) as tracker:
+        with logger.RewardTracker(
+            net, writer, stop_reward=params["stop_reward"], tag="a3c"
+        ) as tracker:
             while True:
                 train_entry = train_queue.get()
                 if isinstance(train_entry, TotalReward):

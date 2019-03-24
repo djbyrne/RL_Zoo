@@ -1,14 +1,26 @@
 import sys
+import os
 import time
 import numpy as np
 import torch
 import torch.nn as nn
+from collections import deque
+
+
+def save_model(net, save_name="latest_model.pth"):
+    torch.save(net.state_dict(), save_name)
 
 
 class RewardTracker:
-    def __init__(self, writer, stop_reward):
+    def __init__(self, net, writer, stop_reward, tag="experiment"):
         self.writer = writer
         self.stop_reward = stop_reward
+        self.best_avg_reward = -np.inf
+        self.tag = tag
+        self.net = net
+
+        self.save_path = os.path.join("saves", tag)
+        os.makedirs(self.save_path, exist_ok=True)
 
     def __enter__(self):
         self.ts = time.time()
@@ -23,6 +35,7 @@ class RewardTracker:
         """
         add reward to tracker and check if early stopping should be activated
         """
+
         self.total_rewards.append(reward)
         speed = (frame - self.ts_frame) / (time.time() - self.ts)
         self.ts_frame = frame
@@ -39,6 +52,12 @@ class RewardTracker:
         self.writer.add_scalar("speed", speed, frame)
         self.writer.add_scalar("reward_100", mean_reward, frame)
         self.writer.add_scalar("reward", reward, frame)
+
+        if mean_reward > self.best_avg_reward:
+            self.best_avg_reward = mean_reward
+            name = self.tag + "_best_avg_reward.pth"
+            save_name = os.path.join(self.save_path, name)
+            save_model(self.net, save_name)
         if mean_reward > self.stop_reward:
             print("Solved in %d frames!" % frame)
             return True

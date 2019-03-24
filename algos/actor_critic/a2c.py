@@ -64,7 +64,7 @@ if __name__ == "__main__":
     batch = []
 
     # TRAINING
-    with logger.RewardTracker(writer, stop_reward=195) as tracker:
+    with logger.RewardTracker(net, writer, stop_reward=195, tag="a2c") as tracker:
         for step_idx, exp in enumerate(exp_source):
             batch.append(exp)
 
