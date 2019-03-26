@@ -11,18 +11,20 @@ class Network(nn.Module):
         super(Network, self).__init__()
 
         self.base = nn.Sequential(
-            nn.Linear(obs_size, hidden_layer_size),
+            nn.Linear(obs_size, 400),
+            nn.ReLU(),
+            nn.Linear(400, 300),
             nn.ReLU(),
         )
         self.mu = nn.Sequential(
-            nn.Linear(hidden_layer_size, act_size),
+            nn.Linear(300, act_size),
             nn.Tanh(),
         )
         self.var = nn.Sequential(
-            nn.Linear(hidden_layer_size, act_size),
+            nn.Linear(300, act_size),
             nn.Softplus(),
         )
-        self.value = nn.Linear(hidden_layer_size, 1)
+        self.value = nn.Linear(300, 1)
 
     def forward(self, x):
         base_out = self.base(x)

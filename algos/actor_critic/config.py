@@ -56,8 +56,8 @@ PARAMS = {
     },
     "pendulum": {
         "env_name": "Pendulum-v0",
-        "env_type": "basic",
-        "num_env": 2,
+        "env_type": "box",
+        "num_env": 50,
         "num_procs": 4,
         "stop_reward": 195,
         "run_name": "cartpole",
@@ -69,9 +69,9 @@ PARAMS = {
         "epsilon_final": 0.1,
         "learning_rate": 0.001,
         "gamma": 0.99,
-        "batch_size": 64,
-        "step_count": 4,
-        "grad_clip": 5,
+        "batch_size": 512,
+        "step_count": 2,
+        "grad_clip": 0.1,
         "beta": 0.01,
     },
     "lunarlander": {

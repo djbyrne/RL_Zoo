@@ -141,7 +141,6 @@ class PolicyGradientAgent(BaseAgent):
                 states = states.to(self.device)
 
         probs_v = self.model(states)
-        print(probs_v)
         if self.apply_softmax:
             probs_v = F.softmax(probs_v, dim=1)
 

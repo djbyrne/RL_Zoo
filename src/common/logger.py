@@ -24,7 +24,9 @@ class RewardTracker:
         add reward to tracker and check if early stopping should be activated
         """
         self.total_rewards.append(reward)
-        speed = (frame - self.ts_frame) / (time.time() - self.ts)
+        time_difference = (time.time() - self.ts)
+        frame_difference = (frame - self.ts_frame)
+        speed = frame_difference if time_difference == 0 else frame_difference / time_difference
         self.ts_frame = frame
         self.ts = time.time()
         mean_reward = np.mean(self.total_rewards[-100:])

@@ -62,7 +62,7 @@ def unpack_batch(batch, net, device="cpu"):
     return states_v, actions_t, ref_vals_v
 
 
-def unpack_batch_a2c(batch, net, last_val_gamma, device="cpu"):
+def unpack_batch_continuous(batch, net, last_val_gamma, device="cpu"):
     """
     Convert batch into training tensors
     :param batch:
