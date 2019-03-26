@@ -5,7 +5,7 @@ from collections import deque
 import gym
 from gym import spaces
 import cv2
-from unityagents import UnityEnvironment
+# from unityagents import UnityEnvironment
 
 ENV_PATH = "/Users/donalbyrne/Workspace/RL_Zoo/src/environments/"
 

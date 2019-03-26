@@ -154,11 +154,10 @@ class ContinuousAgent(BaseAgent):
     def __init__(
         self,
         model,
-        action,
         action_selector=actions.VarianceSampleSelector(),
         device="cpu",
         apply_softmax=False,
-        preprocessor=utils.default_states_preprocessor,
+        preprocessor=utils.float32_preprocessor,
     ):
 
         self.model = model

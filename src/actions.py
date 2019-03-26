@@ -69,7 +69,7 @@ class VarianceSampleSelector(ActionSelector):
         """
 
         sigma = torch.sqrt(variance).data.cpu().numpy()
-        actions = np.random.normal(mu, sigma)
+        actions = np.random.normal(probs, sigma)
         actions = np.clip(actions, lower_bound, upper_bound)
 
         return actions
