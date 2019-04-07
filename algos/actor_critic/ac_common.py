@@ -131,11 +131,6 @@ def unpack_batch_a2c(batch, net, last_val_gamma, device="cpu"):
     ref_vals_v = torch.FloatTensor(rewards_np).to(device)
     return states_v, actions_v, ref_vals_v
 
-def calc_logprob(mu_v, logstd_v, actions_v):
-    p1 = - ((mu_v - actions_v) ** 2) / (2*torch.exp(logstd_v).clamp(min=1e-3))
-    p2 = - torch.log(torch.sqrt(2 * math.pi * torch.exp(logstd_v)))
-    return p1 + p2
-
 
 def test_net(net, env, count=10, device="cpu"):
     """Iterates through several episodes with no exploration or updates to test performance of current agent

@@ -10,7 +10,9 @@ import numpy as np
 
 from common import utils
 from networks import ops
-from ac_common import unpack_batch
+from ac_common import unpack_batch, unpack_batch_a2c
+import math
+
 
 
 def calc_loss_dqn(batch, net, tgt_net, gamma=0.99, device="cpu", double=True):
@@ -225,7 +227,7 @@ def calc_loss_rainbow(
     # calculate net output
     state_action_values = distr_v[range(batch_size), actions_v.data]
     state_log_sm_v = F.log_softmax(state_action_values, dim=1)
-    proj_distr_v = torch.tensor(proj_distr).to(device)
+    proj_distr_v = torch.tensor(projected_distribution).to(device)
 
     loss_v = -state_log_sm_v * proj_distr_v
     loss_v = batch_weights_v * loss_v.sum(dim=1)
@@ -281,3 +283,39 @@ def calc_a2c_loss(batch, net, params, device="cpu"):
     loss_v = entropy_loss_v + loss_value_v
 
     return loss_policy_v, loss_v
+
+
+def calc_logprob(mu_v, logstd_v, actions_v):
+    p1 = - ((mu_v - actions_v) ** 2) / (2*torch.exp(logstd_v).clamp(min=1e-3))
+    p2 = - torch.log(torch.sqrt(2 * math.pi * torch.exp(logstd_v)))
+    return p1 + p2
+
+
+def calc_a2c_continuous_loss(batch, net_act, net_crt, params, tb_tracker, device="cpu"):
+    """
+    Calculate the loss of the network given the batch data
+
+    Args:
+        batch: batch of stored experiences/environment transitions
+        net: neural network
+
+    Returns:
+        policy_loss: the loss calculated for the policy/actor
+        value_loss: the loss calculated for the value/critic
+    """
+
+    states_v, actions_v, vals_ref_v = \
+        unpack_batch_a2c(batch, net_crt, last_val_gamma=params["gamma"] ** params["step_count"], device=device)
+
+    value_v = net_crt(states_v)
+    loss_value_v = F.mse_loss(value_v.squeeze(-1), vals_ref_v)
+
+    mu_v = net_act(states_v)
+    adv_v = vals_ref_v.unsqueeze(dim=-1) - value_v.detach()
+    log_prob_v = adv_v * calc_logprob(mu_v, net_act.logstd, actions_v)
+    loss_policy_v = -log_prob_v.mean()
+    entropy_loss_v = params["beta"] * (-(torch.log(2 * math.pi * torch.exp(net_act.logstd)) + 1) / 2).mean()
+    loss_v = loss_policy_v + entropy_loss_v
+
+    return loss_value_v, loss_v
+

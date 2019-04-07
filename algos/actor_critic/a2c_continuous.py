@@ -21,6 +21,7 @@ import sys
 sys.path.append(os.path.abspath(os.path.join("../../", "src")))
 import agents
 from networks import actor_critic_continuous as network
+import loss
 
 
 if __name__ == "__main__":
@@ -80,32 +81,14 @@ if __name__ == "__main__":
                 if len(batch) < params["batch_size"]:
                     continue
 
-                states_v, actions_v, vals_ref_v = \
-                    ac_common.unpack_batch_a2c(batch, net_crt,
-                                               last_val_gamma=params["gamma"] ** params["step_count"], device=device)
+                opt_crt.zero_grad()
+                opt_act.zero_grad()
+
+                loss_value_v, loss_v = loss.calc_a2c_continuous_loss(batch, net_act, net_crt, params, tb_tracker)
+                loss_value_v.backward()
+                loss_v.backward()
+
                 batch.clear()
 
-                opt_crt.zero_grad()
-                value_v = net_crt(states_v)
-                loss_value_v = F.mse_loss(value_v.squeeze(-1), vals_ref_v)
-                loss_value_v.backward()
                 opt_crt.step()
-
-                opt_act.zero_grad()
-                mu_v = net_act(states_v)
-                adv_v = vals_ref_v.unsqueeze(dim=-1) - value_v.detach()
-                log_prob_v = adv_v * ac_common.calc_logprob(mu_v, net_act.logstd, actions_v)
-                loss_policy_v = -log_prob_v.mean()
-                entropy_loss_v = params["beta"] * (-(torch.log(2*math.pi*torch.exp(net_act.logstd)) + 1)/2).mean()
-                loss_v = loss_policy_v + entropy_loss_v
-                loss_v.backward()
                 opt_act.step()
-
-                tb_tracker.track("advantage", adv_v, step_idx)
-                tb_tracker.track("values", value_v, step_idx)
-                tb_tracker.track("batch_rewards", vals_ref_v, step_idx)
-                tb_tracker.track("loss_entropy", entropy_loss_v, step_idx)
-                tb_tracker.track("loss_policy", loss_policy_v, step_idx)
-                tb_tracker.track("loss_value", loss_value_v, step_idx)
-                tb_tracker.track("loss_total", loss_v, step_idx)
-
