@@ -13,6 +13,7 @@ import torch.nn.functional as F
 
 import actions
 from common import utils
+import ptan
 
 
 class BaseAgent:
@@ -141,10 +142,68 @@ class PolicyGradientAgent(BaseAgent):
                 states = states.to(self.device)
 
         probs_v = self.model(states)
-
         if self.apply_softmax:
             probs_v = F.softmax(probs_v, dim=1)
 
         probs = probs_v.data.cpu().numpy()
         actions = self.action_selector(probs)
         return np.array(actions), agent_states
+
+
+class ContinuousAgent(BaseAgent):
+    def __init__(
+        self,
+        model,
+        action_selector=actions.VarianceSampleSelector(),
+        device="cpu",
+        apply_softmax=False,
+        preprocessor=utils.float32_preprocessor,
+    ):
+
+        self.model = model
+        self.action_selector = action_selector
+        self.device = device
+        self.apply_softmax = apply_softmax
+        self.preprocessor = preprocessor
+
+    def __call__(self, states, agent_states=None):
+        """
+        Return continuous action from a given list of states
+
+        Args:
+            states: batch of states
+            agent_states: 
+
+        Returns:
+            list of actions
+        """
+        if agent_states is None:
+            agent_states = [None] * len(states)
+
+        if self.preprocessor is not None:
+            states = self.preprocessor(states)
+            if torch.is_tensor(states):
+                states = states.to(self.device)
+
+        probs_v, var_v, _ = self.model(states)
+        probs = probs_v.data.cpu().numpy()
+
+        actions = self.action_selector(probs, var_v)
+
+        return actions, agent_states
+
+
+class AgentA2C(ptan.agent.BaseAgent):
+    def __init__(self, net, device="cpu"):
+        self.net = net
+        self.device = device
+
+    def __call__(self, states, agent_states):
+        states_v = utils.float32_preprocessor(states).to(self.device)
+
+        mu_v = self.net(states_v)
+        mu = mu_v.data.cpu().numpy()
+        logstd = self.net.logstd.data.cpu().numpy()
+        actions = mu + np.exp(logstd) * np.random.normal(size=logstd.shape)
+        actions = np.clip(actions, -1, 1)
+        return actions, agent_states

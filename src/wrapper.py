@@ -5,7 +5,7 @@ from collections import deque
 import gym
 from gym import spaces
 import cv2
-from unityagents import UnityEnvironment
+# from unityagents import UnityEnvironment
 
 ENV_PATH = "/Users/donalbyrne/Workspace/RL_Zoo/src/environments/"
 
@@ -321,13 +321,16 @@ def build_env_wrapper(env_name, env_type="basic"):
     if env_type == "basic":
         env = gym.make(env_name)
         return [env, env.observation_space.shape, env.action_space.n]
+    elif env_type == "box":
+        env = gym.make(env_name)
+        return [env, env.observation_space.shape[0], env.action_space.shape[0]]
     elif env_type == "atari":
         env = gym.make(env_name)
         env = wrap_dqn_atari(env)
         return [env, env.observation_space.shape, env.action_space.n]
     elif env_type == "unity":
         env = UnityWrapper(ENV_PATH + env_name)
-        return [env, env.observation_space.shape, env.action_space_size]
+        return env, env.observation_space.shape, env.action_space_size
 
 
 def build_multi_env(env_name, env_type="basic", num_envs=4):
@@ -338,8 +341,8 @@ def build_multi_env(env_name, env_type="basic", num_envs=4):
     make_env = lambda: build_env_wrapper(env_name, env_type)
     output = [make_env() for _ in range(num_envs)]
     envs = [item[0] for item in output]
-
-    return envs, envs[0].observation_space.shape, envs[0].action_space.n
+    print(output)
+    return envs, output[0][1], output[0][2]
 
 
 def wrap_dqn_atari(

@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 
 
 class ActionSelector:
@@ -50,3 +51,25 @@ class ProbabilityActionSelector(ActionSelector):
         for prob in probs:
             actions.append(np.random.choice(len(prob), p=prob))
         return np.array(actions)
+
+
+class VarianceSampleSelector(ActionSelector):
+    """
+    Samples action from the network output and network variance.
+    """
+
+    def __call__(self, probs, variance, lower_bound=-1, upper_bound=1):
+        """
+        Args:
+            probs: probabilities from the network
+            variance: variance from the network
+
+        Returns:
+            action sampled between probs and variance, clipped between 
+        """
+
+        sigma = torch.sqrt(variance).data.cpu().numpy()
+        actions = np.random.normal(probs, sigma)
+        actions = np.clip(actions, lower_bound, upper_bound)
+
+        return actions
