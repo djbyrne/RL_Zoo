@@ -14,22 +14,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 
-
-ENV_ID = "RoboschoolHalfCheetah-v1"
-
-GAMMA = 0.99
-REWARD_STEPS = 5
-BATCH_SIZE = 32
-LEARNING_RATE_ACTOR = 1e-7
-LEARNING_RATE_CRITIC = 1e-3
-ENTROPY_BETA = 0.01
-ENVS_COUNT = 16
-GRAD_CLIP = 5
-
-TEST_ITERS = 1000
-
-
-HID_SIZE = 64
+import config
 
 
 class ModelActor(nn.Module):
@@ -49,6 +34,7 @@ class ModelActor(nn.Module):
     def forward(self, x):
         return self.mu(x)
 
+HID_SIZE = 64
 
 class ModelCritic(nn.Module):
     def __init__(self, obs_size):
@@ -129,7 +115,7 @@ def test_net(net, env, count=10, device="cpu"):
             mu_v = net(obs_v)[0]
             action = mu_v.squeeze(dim=0).data.cpu().numpy()
             action = np.clip(action, -1, 1)
-            obs, reward, done, _ = env.step([action])
+            obs, reward, done, _ = env.step(action)
             rewards += reward
             steps += 1
             if done:
@@ -147,16 +133,19 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--cuda", default=False, action='store_true', help='Enable CUDA')
     parser.add_argument("-n", "--name", required=True, help="Name of the run")
-    parser.add_argument("-e", "--env", default=ENV_ID, help="Environment id, default=" + ENV_ID)
+    parser.add_argument("-c", "--config", default="half-cheetah", help="Environment id, default=half-cheetah")
     args = parser.parse_args()
     device = "cpu"
 
     save_path = os.path.join("saves", "a2c-" + args.name)
     os.makedirs(save_path, exist_ok=True)
 
-    envs = [gym.make(args.env) for _ in range(ENVS_COUNT)]
-    test_env = gym.make(args.env)
+    params = config.PARAMS[args.config]
 
+    envs = [gym.make(params["env_name"]) for _ in range(params["num_env"])]
+    test_env = gym.make(params["env_name"])
+
+    print(envs)
     net_act = ModelActor(envs[0].observation_space.shape[0], envs[0].action_space.shape[0]).to(device)
     net_crt = ModelCritic(envs[0].observation_space.shape[0]).to(device)
     print(net_act)
@@ -164,10 +153,10 @@ if __name__ == "__main__":
 
     writer = SummaryWriter(comment="-a2c_" + args.name)
     agent = AgentA2C(net_act, device=device)
-    exp_source = ptan.experience.ExperienceSourceFirstLast(envs, agent, GAMMA, steps_count=REWARD_STEPS)
+    exp_source = ptan.experience.ExperienceSourceFirstLast(envs, agent, params["gamma"], steps_count=params["step_count"])
 
-    opt_act = optim.Adam(net_act.parameters(), lr=LEARNING_RATE_ACTOR)
-    opt_crt = optim.Adam(net_crt.parameters(), lr=LEARNING_RATE_CRITIC)
+    opt_act = optim.Adam(net_act.parameters(), lr=params["actor_learning_rate"])
+    opt_crt = optim.Adam(net_crt.parameters(), lr=params["critic_learning_rate"])
 
     batch = []
     best_reward = None
@@ -180,7 +169,7 @@ if __name__ == "__main__":
                     tb_tracker.track("episode_steps", np.mean(steps), step_idx)
                     tracker.reward(np.mean(rewards), step_idx)
 
-                if step_idx % TEST_ITERS == 0:
+                if step_idx % params["test_iterations"] == 0:
                     ts = time.time()
                     rewards, steps = test_net(net_act, test_env, device=device)
                     print("Test done in %.2f sec, reward %.3f, steps %d" % (
@@ -197,11 +186,11 @@ if __name__ == "__main__":
 
                 batch.append(exp)
 
-                if len(batch) < BATCH_SIZE:
+                if len(batch) < params["batch_size"]:
                     continue
 
                 states_v, actions_v, vals_ref_v = \
-                    unpack_batch_a2c(batch, net_crt, last_val_gamma=GAMMA ** REWARD_STEPS, device=device)
+                    unpack_batch_a2c(batch, net_crt, last_val_gamma=params["gamma"] ** params["step_count"], device=device)
                 batch.clear()
 
                 opt_crt.zero_grad()
@@ -215,7 +204,7 @@ if __name__ == "__main__":
                 adv_v = vals_ref_v.unsqueeze(dim=-1) - value_v.detach()
                 log_prob_v = adv_v * calc_logprob(mu_v, net_act.logstd, actions_v)
                 loss_policy_v = -log_prob_v.mean()
-                entropy_loss_v = ENTROPY_BETA * (-(torch.log(2*math.pi*torch.exp(net_act.logstd)) + 1)/2).mean()
+                entropy_loss_v = params["beta"] * (-(torch.log(2*math.pi*torch.exp(net_act.logstd)) + 1)/2).mean()
                 loss_v = loss_policy_v + entropy_loss_v
                 loss_v.backward()
                 opt_act.step()
