@@ -13,6 +13,7 @@ import torch.nn.functional as F
 
 import actions
 from common import utils
+import ptan
 
 
 class BaseAgent:
@@ -189,4 +190,20 @@ class ContinuousAgent(BaseAgent):
 
         actions = self.action_selector(probs, var_v)
 
+        return actions, agent_states
+
+
+class AgentA2C(ptan.agent.BaseAgent):
+    def __init__(self, net, device="cpu"):
+        self.net = net
+        self.device = device
+
+    def __call__(self, states, agent_states):
+        states_v = utils.float32_preprocessor(states).to(self.device)
+
+        mu_v = self.net(states_v)
+        mu = mu_v.data.cpu().numpy()
+        logstd = self.net.logstd.data.cpu().numpy()
+        actions = mu + np.exp(logstd) * np.random.normal(size=logstd.shape)
+        actions = np.clip(actions, -1, 1)
         return actions, agent_states
