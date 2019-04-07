@@ -291,7 +291,7 @@ def calc_logprob(mu_v, logstd_v, actions_v):
     return p1 + p2
 
 
-def calc_a2c_continuous_loss(batch, net_act, net_crt, params, tb_tracker, device="cpu"):
+def calc_a2c_continuous_loss(batch, net_act, net_crt, params, device="cpu"):
     """
     Calculate the loss of the network given the batch data
 

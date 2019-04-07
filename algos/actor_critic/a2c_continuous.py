@@ -83,7 +83,7 @@ if __name__ == "__main__":
                 opt_crt.zero_grad()
                 opt_act.zero_grad()
 
-                loss_value_v, loss_v = loss.calc_a2c_continuous_loss(batch, net_act, net_crt, params, tb_tracker)
+                loss_value_v, loss_v = loss.calc_a2c_continuous_loss(batch, net_act, net_crt, params)
                 loss_value_v.backward()
                 loss_v.backward()
 
