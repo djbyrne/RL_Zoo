@@ -20,41 +20,7 @@ import sys
 
 sys.path.append(os.path.abspath(os.path.join("../../", "src")))
 import agents
-
-
-class ModelActor(nn.Module):
-    def __init__(self, obs_size, act_size):
-        super(ModelActor, self).__init__()
-
-        self.mu = nn.Sequential(
-            nn.Linear(obs_size, HID_SIZE),
-            nn.Tanh(),
-            nn.Linear(HID_SIZE, HID_SIZE),
-            nn.Tanh(),
-            nn.Linear(HID_SIZE, act_size),
-            nn.Tanh(),
-        )
-        self.logstd = nn.Parameter(torch.zeros(act_size))
-
-    def forward(self, x):
-        return self.mu(x)
-
-HID_SIZE = 64
-
-class ModelCritic(nn.Module):
-    def __init__(self, obs_size):
-        super(ModelCritic, self).__init__()
-
-        self.value = nn.Sequential(
-            nn.Linear(obs_size, HID_SIZE),
-            nn.ReLU(),
-            nn.Linear(HID_SIZE, HID_SIZE),
-            nn.ReLU(),
-            nn.Linear(HID_SIZE, 1),
-        )
-
-    def forward(self, x):
-        return self.value(x)
+from networks import actor_critic_continuous as network
 
 
 if __name__ == "__main__":
@@ -73,10 +39,8 @@ if __name__ == "__main__":
     envs = [gym.make(params["env_name"]) for _ in range(params["num_env"])]
     test_env = gym.make(params["env_name"])
 
-    net_act = ModelActor(envs[0].observation_space.shape[0], envs[0].action_space.shape[0]).to(device)
-    net_crt = ModelCritic(envs[0].observation_space.shape[0]).to(device)
-    print(net_act)
-    print(net_crt)
+    net_act = network.ActorNetwork(envs[0].observation_space.shape[0], envs[0].action_space.shape[0]).to(device)
+    net_crt = network.CriticNetwork(envs[0].observation_space.shape[0]).to(device)
 
     writer = SummaryWriter(comment="-a2c_" + args.name)
     agent = agents.AgentA2C(net_act, device=device)

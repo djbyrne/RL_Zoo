@@ -4,15 +4,9 @@
     <bookmark url="file://$PROJECT_DIR$/src/memory.py" line="150" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c01a4c1d-081c-45e1-bbb5-5a4975bbf306" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/RL_Zoo.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/RL_Zoo.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="c01a4c1d-081c-45e1-bbb5-5a4975bbf306" name="Default Changelist" comment="refactor agent and unbatch files">
       <change beforePath="$PROJECT_DIR$/algos/actor_critic/a2c_continuous.py" beforeDir="false" afterPath="$PROJECT_DIR$/algos/actor_critic/a2c_continuous.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/algos/actor_critic/ac_common.py" beforeDir="false" afterPath="$PROJECT_DIR$/algos/actor_critic/ac_common.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/agents.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/agents.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/common/logger.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/common/logger.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/networks/actor_critic_continuous.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/networks/actor_critic_continuous.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -34,10 +28,22 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/algos/actor_critic/a2c_continuous.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="135">
-              <caret line="25" column="10" selection-start-line="25" selection-start-column="10" selection-end-line="25" selection-end-column="10" />
+            <state relative-caret-position="-688">
+              <caret line="42" column="82" selection-start-line="42" selection-start-column="82" selection-end-line="42" selection-end-column="82" />
               <folding>
                 <element signature="e#23#32#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/networks/actor_critic_continuous.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="765">
+              <caret line="51" column="24" lean-forward="true" selection-start-line="51" selection-start-column="24" selection-end-line="51" selection-end-column="24" />
+              <folding>
+                <element signature="e#0#11#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -134,7 +140,6 @@
         <option value="$PROJECT_DIR$/src/loss.py" />
         <option value="$PROJECT_DIR$/src/actions.py" />
         <option value="$PROJECT_DIR$/src/wrapper.py" />
-        <option value="$PROJECT_DIR$/src/networks/actor_critic_continuous.py" />
         <option value="$PROJECT_DIR$/algos/actor_critic/a2c_con_baseline.py" />
         <option value="$PROJECT_DIR$/src/networks/actor_critic_mlp.py" />
         <option value="$PROJECT_DIR$/algos/actor_critic/a2c.py" />
@@ -145,6 +150,7 @@
         <option value="$PROJECT_DIR$/algos/actor_critic/config.py" />
         <option value="$PROJECT_DIR$/algos/actor_critic/ac_common.py" />
         <option value="$PROJECT_DIR$/src/agents.py" />
+        <option value="$PROJECT_DIR$/src/networks/actor_critic_continuous.py" />
         <option value="$PROJECT_DIR$/algos/actor_critic/a2c_continuous.py" />
       </list>
     </option>
@@ -180,6 +186,12 @@
               <item name="RL_Zoo" type="b2602c69:ProjectViewProjectNode" />
               <item name="RL_Zoo" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="RL_Zoo" type="b2602c69:ProjectViewProjectNode" />
+              <item name="RL_Zoo" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="networks" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -296,6 +308,10 @@
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
     </layout>
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="refactor agent and unbatch files" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor agent and unbatch files" />
+  </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/Action/action.py" />
     <entry file="file://$PROJECT_DIR$/Agent/Agent.py" />
@@ -392,16 +408,6 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/networks/gaussian_actor_critic.py" />
-    <entry file="file://$PROJECT_DIR$/src/networks/actor_critic_continuous.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="407">
-          <caret line="31" selection-end-line="31" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/networks/actor_critic_gaussian.py" />
     <entry file="file://$PROJECT_DIR$/src/wrapper.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -471,10 +477,20 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/networks/actor_critic_continuous.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="765">
+          <caret line="51" column="24" lean-forward="true" selection-start-line="51" selection-start-column="24" selection-end-line="51" selection-end-column="24" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/algos/actor_critic/a2c_continuous.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="135">
-          <caret line="25" column="10" selection-start-line="25" selection-start-column="10" selection-end-line="25" selection-end-column="10" />
+        <state relative-caret-position="-688">
+          <caret line="42" column="82" selection-start-line="42" selection-start-column="82" selection-end-line="42" selection-end-column="82" />
           <folding>
             <element signature="e#23#32#0" expanded="true" />
           </folding>
