@@ -16,7 +16,7 @@ import torch.optim as optim
 from common import hyperparameters
 from common import utils
 import ptan
-import math
+import time
 
 
 def unpack_batch(batch, net, device="cpu"):
@@ -159,3 +159,12 @@ def test_net(net, env, count=10, device="cpu"):
             if done:
                 break
     return rewards / count, steps / count
+
+
+def run_test(net, env, device="cpu"):
+    ts = time.time()
+    rewards, steps = test_net(net, env, device=device)
+    print("Test done in %.2f sec, reward %.3f, steps %d" % (
+        time.time() - ts, rewards, steps))
+
+    return rewards, steps

@@ -7,7 +7,6 @@
     <list default="true" id="c01a4c1d-081c-45e1-bbb5-5a4975bbf306" name="Default Changelist" comment="refactor agent and unbatch files">
       <change beforePath="$PROJECT_DIR$/algos/actor_critic/a2c_continuous.py" beforeDir="false" afterPath="$PROJECT_DIR$/algos/actor_critic/a2c_continuous.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/algos/actor_critic/ac_common.py" beforeDir="false" afterPath="$PROJECT_DIR$/algos/actor_critic/ac_common.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/loss.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/loss.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -56,11 +55,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/algos/actor_critic/ac_common.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="106">
-              <caret line="106" column="7" selection-start-line="106" selection-start-column="7" selection-end-line="106" selection-end-column="7" />
+            <state relative-caret-position="347">
+              <caret line="168" column="4" selection-start-line="168" selection-start-column="4" selection-end-line="168" selection-end-column="4" />
             </state>
           </provider>
         </entry>
@@ -89,11 +88,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/algos/actor_critic/a2c_continuous.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="574">
-              <caret line="91" selection-start-line="91" selection-end-line="91" />
+            <state relative-caret-position="179">
+              <caret line="64" selection-start-line="64" selection-end-line="64" />
               <folding>
                 <element signature="e#23#32#0" expanded="true" />
               </folding>
@@ -163,8 +162,8 @@
         <option value="$PROJECT_DIR$/src/agents.py" />
         <option value="$PROJECT_DIR$/src/networks/actor_critic_continuous.py" />
         <option value="$PROJECT_DIR$/src/loss.py" />
-        <option value="$PROJECT_DIR$/algos/actor_critic/ac_common.py" />
         <option value="$PROJECT_DIR$/algos/actor_critic/a2c_continuous.py" />
+        <option value="$PROJECT_DIR$/algos/actor_critic/ac_common.py" />
       </list>
     </option>
   </component>
@@ -476,13 +475,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/algos/actor_critic/ac_common.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="106">
-          <caret line="106" column="7" selection-start-line="106" selection-start-column="7" selection-end-line="106" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/networks/actor_critic_continuous.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="374">
@@ -502,11 +494,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/algos/actor_critic/a2c_continuous.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="574">
-          <caret line="91" selection-start-line="91" selection-end-line="91" />
+        <state relative-caret-position="179">
+          <caret line="64" selection-start-line="64" selection-end-line="64" />
           <folding>
             <element signature="e#23#32#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/algos/actor_critic/ac_common.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="347">
+          <caret line="168" column="4" selection-start-line="168" selection-start-column="4" selection-end-line="168" selection-end-column="4" />
         </state>
       </provider>
     </entry>

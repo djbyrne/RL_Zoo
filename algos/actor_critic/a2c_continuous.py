@@ -62,12 +62,11 @@ if __name__ == "__main__":
                     tracker.reward(np.mean(rewards), step_idx)
 
                 if step_idx % params["test_iterations"] == 0:
-                    ts = time.time()
-                    rewards, steps = ac_common.test_net(net_act, test_env, device=device)
-                    print("Test done in %.2f sec, reward %.3f, steps %d" % (
-                        time.time() - ts, rewards, steps))
+                    rewards, steps = ac_common.run_test(net_act, test_env)
+
                     writer.add_scalar("test_reward", rewards, step_idx)
                     writer.add_scalar("test_steps", steps, step_idx)
+
                     if best_reward is None or best_reward < rewards:
                         if best_reward is not None:
                             print("Best reward updated: %.3f -> %.3f" % (best_reward, rewards))
