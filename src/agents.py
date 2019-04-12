@@ -13,7 +13,7 @@ import torch.nn.functional as F
 
 import actions
 from common import utils
-import ptan
+
 
 
 class BaseAgent:
@@ -193,7 +193,7 @@ class ContinuousAgent(BaseAgent):
         return actions, agent_states
 
 
-class AgentA2C(ptan.agent.BaseAgent):
+class AgentA2C(BaseAgent):
     def __init__(self, net, device="cpu"):
         self.net = net
         self.device = device
@@ -209,12 +209,12 @@ class AgentA2C(ptan.agent.BaseAgent):
         return actions, agent_states
 
 
-class AgentDDPG(ptan.agent.BaseAgent):
+class AgentDDPG(BaseAgent):
     """
     Agent implementing Orstein-Uhlenbeck exploration process
     """
 
-    def __init__(self, net, device="cpu", clipping=[-1, 1], ou_enabled=True, ou_mu=0.0, ou_teta=0.15, ou_sigma=0.2,
+    def __init__(self, net, device="cpu", clipping=[0, 1], ou_enabled=True, ou_mu=0.0, ou_teta=0.15, ou_sigma=0.2,
                  ou_epsilon=1.0):
         self.net = net
         self.device = device
@@ -229,7 +229,7 @@ class AgentDDPG(ptan.agent.BaseAgent):
         return None
 
     def __call__(self, states, agent_states):
-        states_v = ptan.agent.float32_preprocessor(states).to(self.device)
+        states_v = utils.float32_preprocessor(states).to(self.device)
         mu_v = self.net(states_v)
         actions = mu_v.data.cpu().numpy()
 
@@ -248,5 +248,5 @@ class AgentDDPG(ptan.agent.BaseAgent):
         else:
             new_a_states = agent_states
 
-        actions = np.clip(actions, self.clipping[0], self.clipping[1])
+        # actions = np.clip(actions, self.clipping[0], self.clipping[1])
         return actions, new_a_states
