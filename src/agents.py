@@ -49,11 +49,11 @@ class DQNAgent(BaseAgent):
     """
 
     def __init__(
-        self,
-        dqn_model,
-        action_selector,
-        device="cpu",
-        preprocessor=utils.default_states_preprocessor,
+            self,
+            dqn_model,
+            action_selector,
+            device="cpu",
+            preprocessor=utils.default_states_preprocessor,
     ):
         self.dqn_model = dqn_model
         self.action_selector = action_selector
@@ -108,12 +108,12 @@ class PolicyGradientAgent(BaseAgent):
     """
 
     def __init__(
-        self,
-        model,
-        action_selector=actions.ProbabilityActionSelector(),
-        device="cpu",
-        apply_softmax=False,
-        preprocessor=utils.default_states_preprocessor,
+            self,
+            model,
+            action_selector=actions.ProbabilityActionSelector(),
+            device="cpu",
+            apply_softmax=False,
+            preprocessor=utils.default_states_preprocessor,
     ):
         self.model = model
         self.action_selector = action_selector
@@ -152,12 +152,12 @@ class PolicyGradientAgent(BaseAgent):
 
 class ContinuousAgent(BaseAgent):
     def __init__(
-        self,
-        model,
-        action_selector=actions.VarianceSampleSelector(),
-        device="cpu",
-        apply_softmax=False,
-        preprocessor=utils.float32_preprocessor,
+            self,
+            model,
+            action_selector=actions.VarianceSampleSelector(),
+            device="cpu",
+            apply_softmax=False,
+            preprocessor=utils.float32_preprocessor,
     ):
 
         self.model = model
@@ -207,3 +207,46 @@ class AgentA2C(ptan.agent.BaseAgent):
         actions = mu + np.exp(logstd) * np.random.normal(size=logstd.shape)
         actions = np.clip(actions, -1, 1)
         return actions, agent_states
+
+
+class AgentDDPG(ptan.agent.BaseAgent):
+    """
+    Agent implementing Orstein-Uhlenbeck exploration process
+    """
+
+    def __init__(self, net, device="cpu", clipping=[-1, 1], ou_enabled=True, ou_mu=0.0, ou_teta=0.15, ou_sigma=0.2,
+                 ou_epsilon=1.0):
+        self.net = net
+        self.device = device
+        self.ou_enabled = ou_enabled
+        self.ou_mu = ou_mu
+        self.ou_teta = ou_teta
+        self.ou_sigma = ou_sigma
+        self.ou_epsilon = ou_epsilon
+        self.clipping = clipping
+
+    def initial_state(self):
+        return None
+
+    def __call__(self, states, agent_states):
+        states_v = ptan.agent.float32_preprocessor(states).to(self.device)
+        mu_v = self.net(states_v)
+        actions = mu_v.data.cpu().numpy()
+
+        if self.ou_enabled and self.ou_epsilon > 0:
+            new_a_states = []
+            for a_state, action in zip(agent_states, actions):
+                if a_state is None:
+                    a_state = np.zeros(shape=action.shape, dtype=np.float32)
+
+                # apply OU noise
+                a_state += self.ou_teta * (self.ou_mu - a_state)
+                a_state += self.ou_sigma * np.random.normal(size=action.shape)
+                action += self.ou_epsilon * a_state
+
+                new_a_states.append(a_state)
+        else:
+            new_a_states = agent_states
+
+        actions = np.clip(actions, self.clipping[0], self.clipping[1])
+        return actions, new_a_states
