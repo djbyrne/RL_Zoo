@@ -24,9 +24,9 @@ import memory
 
 ENV_ID = "Pendulum-v0"
 GAMMA = 0.99
-BATCH_SIZE = 64
+BATCH_SIZE = 512
 LEARNING_RATE = 1e-4
-REPLAY_SIZE = 100000
+REPLAY_SIZE = 1000000
 REPLAY_INITIAL = 10000
 EXPLORE = 100000
 
@@ -57,8 +57,8 @@ if __name__ == "__main__":
         env, agent, gamma=GAMMA, steps_count=1
     )
     buffer = memory.ExperienceReplayBuffer(exp_source, buffer_size=REPLAY_SIZE)
-    act_opt = optim.Adam(act_net.parameters(), lr=LEARNING_RATE)
-    crt_opt = optim.Adam(crt_net.parameters(), lr=LEARNING_RATE)
+    act_opt = optim.Adam(act_net.parameters(), lr=0.00001)
+    crt_opt = optim.Adam(crt_net.parameters(), lr=0.0001)
 
     frame_idx = 0
     best_reward = None
