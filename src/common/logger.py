@@ -57,7 +57,7 @@ class RewardTracker:
 
         if mean_reward > self.best_avg_reward:
             self.best_avg_reward = mean_reward
-            name = self.tag + "_best_avg_reward.pth"
+            name = self.tag + "_best_avg_reward.dat"
             save_name = os.path.join(self.save_path, name)
             save_model(self.net, save_name)
         if mean_reward > self.stop_reward:
