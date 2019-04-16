@@ -76,7 +76,7 @@ To set up your python environment to run the code in this repository, follow the
 - [X] A2C
 - [X] A3C
 - [ ] PPO
-- [ ] DDPG
+- [X] DDPG
 - [ ] D4PG
 - [ ] GAIL
 - [ ] I2A
@@ -109,15 +109,7 @@ To set up your python environment to run the code in this repository, follow the
 
 - [X] Save model weights
 
-**Unit Test Key Areas**
-
- - [ ] Network
- - [ ] Loss function
- - [ ] Experience Buffer
- - [ ] Runner
-
  ## References
 
  - Max Lapan: https://github.com/Shmuma/ptan
- - Shangtong Zhang: https://github.com/ShangtongZhang/DeepRL
 
